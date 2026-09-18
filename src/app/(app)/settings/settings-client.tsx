@@ -160,25 +160,17 @@ function AccountTab({ user }: { user: UserSettings }) {
   );
 }
 
+function isPermitted(role: Role, perm: string) {
+  if (role === "SUPER_ADMIN") return true;
+  if (perm === "Delete") return role === "ADMIN" || role === "MANAGER";
+  return true;
+}
+
 function RolesTab() {
-  const [grid, setGrid] = useState<Record<string, boolean>>({});
-
-  function key(role: Role, perm: string) { return `${role}:${perm}`; }
-  function isChecked(role: Role, perm: string) {
-    const stored = grid[key(role, perm)];
-    if (stored !== undefined) return stored;
-    if (role === "SUPER_ADMIN") return true;
-    if (perm === "Delete") return role === "ADMIN" || role === "MANAGER";
-    return true;
-  }
-  function toggle(role: Role, perm: string) {
-    setGrid((g) => ({ ...g, [key(role, perm)]: !isChecked(role, perm) }));
-  }
-
   return (
     <div className="space-y-5">
       <Card>
-        <CardHeader><CardTitle>Permission matrix</CardTitle><CardDescription>Control what each role can view, create, edit, delete or export.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Permission matrix</CardTitle><CardDescription>What each role can view, create, edit, delete or export. This reflects the access rules enforced across the app — it's a reference, not an editable control.</CardDescription></CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-left text-sm">
             <thead className="text-xs uppercase text-muted border-b border-border">
@@ -190,17 +182,14 @@ function RolesTab() {
                   <td className="py-2.5 font-medium text-foreground">{ROLE_LABELS[role]}</td>
                   {PERMISSIONS.map((perm) => (
                     <td key={perm} className="py-2.5 text-center">
-                      <button
-                        onClick={() => toggle(role, perm)}
-                        disabled={role === "SUPER_ADMIN"}
+                      <span
                         className={cn(
-                          "inline-flex size-6 items-center justify-center rounded-md border transition-colors",
-                          isChecked(role, perm) ? "border-brand bg-brand text-white" : "border-border bg-surface text-transparent",
-                          role === "SUPER_ADMIN" && "opacity-60"
+                          "inline-flex size-6 items-center justify-center rounded-md border",
+                          isPermitted(role, perm) ? "border-brand bg-brand text-white" : "border-border bg-surface text-transparent"
                         )}
                       >
                         <Check className="size-3.5" />
-                      </button>
+                      </span>
                     </td>
                   ))}
                 </tr>
