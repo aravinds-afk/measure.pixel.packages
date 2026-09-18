@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({
@@ -14,26 +13,11 @@ export const metadata: Metadata = {
   description: "Measure Relationships. Grow Your Business. A modern CRM platform to manage customers, leads, sales, teams and business relationships from one powerful workspace.",
 };
 
-const themeInitScript = `
-(function() {
-  try {
-    var stored = localStorage.getItem('mp-theme');
-    var theme = stored || 'light';
-    if (theme === 'dark') document.documentElement.classList.add('dark');
-  } catch (e) {}
-})();
-`;
-
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

@@ -3,14 +3,13 @@
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sun, Moon, Check, Shield, Bell, Building2, User as UserIcon, Sliders, Palette } from "lucide-react";
+import { Check, Shield, Bell, Building2, User as UserIcon, Sliders } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Label, FieldError } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
-import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { companySettingsSchema, type CompanySettingsInput, userSettingsSchema, type UserSettingsInput, passwordChangeSchema, type PasswordChangeInput } from "@/lib/validations/settings";
 import { updateCompanySettingsAction, updateUserSettingsAction, changePasswordAction } from "@/actions/settings";
@@ -47,7 +46,6 @@ export default function SettingsClient({ role, company, user }: { role: Role; co
         {isAdmin && <TabsTrigger value="roles"><Shield className="size-3.5 mr-1.5 inline" />Roles & Permissions</TabsTrigger>}
         <TabsTrigger value="notifications"><Bell className="size-3.5 mr-1.5 inline" />Notifications</TabsTrigger>
         {isAdmin && <TabsTrigger value="crm"><Sliders className="size-3.5 mr-1.5 inline" />CRM Settings</TabsTrigger>}
-        <TabsTrigger value="appearance"><Palette className="size-3.5 mr-1.5 inline" />Appearance</TabsTrigger>
       </TabsList>
 
       {isAdmin && company && (
@@ -61,7 +59,6 @@ export default function SettingsClient({ role, company, user }: { role: Role; co
       {isAdmin && (
         <TabsContent value="crm"><CrmTab /></TabsContent>
       )}
-      <TabsContent value="appearance"><AppearanceTab /></TabsContent>
     </Tabs>
   );
 }
@@ -280,26 +277,5 @@ function CrmTab() {
         </Card>
       ))}
     </div>
-  );
-}
-
-function AppearanceTab() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <Card>
-      <CardHeader><CardTitle>Theme</CardTitle><CardDescription>Choose how Measure Pixel looks on this device.</CardDescription></CardHeader>
-      <CardContent className="flex gap-4">
-        {(["light", "dark"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTheme(t)}
-            className={cn("flex flex-1 flex-col items-center gap-2 rounded-xl border-2 p-5 transition-colors", theme === t ? "border-brand" : "border-border")}
-          >
-            {t === "light" ? <Sun className="size-6 text-warning" /> : <Moon className="size-6 text-brand" />}
-            <span className="text-sm font-medium capitalize text-foreground">{t} mode</span>
-          </button>
-        ))}
-      </CardContent>
-    </Card>
   );
 }

@@ -1,12 +1,11 @@
 "use client";
 
-import { Menu, Moon, Sun, LogOut, User, Settings } from "lucide-react";
+import { Menu, LogOut, User, Settings } from "lucide-react";
 import Link from "next/link";
 import { GlobalSearch } from "@/components/app-shell/global-search";
 import { QuickAdd } from "@/components/app-shell/quick-add";
 import { NotificationBell } from "@/components/app-shell/notification-bell";
 import { Dropdown, DropdownContent, DropdownItem, DropdownSeparator, DropdownTrigger } from "@/components/ui/dropdown";
-import { useTheme } from "@/components/theme-provider";
 import { logoutAction } from "@/actions/auth";
 import { ROLE_LABELS } from "@/lib/rbac";
 import { initials } from "@/lib/utils";
@@ -29,8 +28,6 @@ export function Topbar({
   unreadCount: number;
   onMenuClick: () => void;
 }) {
-  const { theme, toggleTheme } = useTheme();
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-surface/90 px-4 backdrop-blur sm:px-6">
       <button onClick={onMenuClick} className="text-muted hover:text-foreground lg:hidden">
@@ -41,13 +38,6 @@ export function Topbar({
       </div>
       <div className="flex items-center gap-1.5">
         <QuickAdd role={role} />
-        <button
-          onClick={toggleTheme}
-          className="flex size-9.5 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground"
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
-        </button>
         <NotificationBell notifications={notifications} unreadCount={unreadCount} />
         <Dropdown>
           <DropdownTrigger asChild>

@@ -7,8 +7,6 @@ import { LayoutDashboard, User, ShoppingBag, Receipt, Wallet, FileText, LifeBuoy
 import { Logo, LogoMark } from "@/components/logo";
 import { cn, initials } from "@/lib/utils";
 import { logoutAction } from "@/actions/auth";
-import { useTheme } from "@/components/theme-provider";
-import { Sun, Moon } from "lucide-react";
 
 const NAV = [
   { href: "/portal", label: "Dashboard", icon: LayoutDashboard },
@@ -24,7 +22,6 @@ const NAV = [
 export function PortalShell({ name, children }: { name: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="flex min-h-svh w-full">
@@ -64,9 +61,6 @@ export function PortalShell({ name, children }: { name: string; children: React.
           <button onClick={() => setMobileOpen(true)} className="text-muted hover:text-foreground lg:hidden"><Menu className="size-5" /></button>
           <LogoMark className="lg:hidden" />
           <div className="flex-1" />
-          <button onClick={toggleTheme} className="flex size-9.5 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-foreground">
-            {theme === "dark" ? <Sun className="size-4.5" /> : <Moon className="size-4.5" />}
-          </button>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
