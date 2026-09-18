@@ -2,14 +2,12 @@ import { cn } from "@/lib/utils";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        "flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm shadow-sm",
-        className
-      )}
-    >
-      MP
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/brand/logo-mark.png"
+      alt="Measure Pixel"
+      className={cn("size-8 shrink-0 rounded-lg object-cover shadow-sm", className)}
+    />
   );
 }
 
@@ -18,8 +16,8 @@ export function Logo({ className, showText = true }: { className?: string; showT
     <div className={cn("flex items-center gap-2.5", className)}>
       <LogoMark />
       {showText && (
-        <span className="text-[15px] font-semibold tracking-tight text-foreground">
-          Measure Pixel
+        <span className="text-[16px] font-extrabold tracking-tight text-foreground">
+          Measure <span className="font-semibold">Pixel</span>
         </span>
       )}
     </div>
