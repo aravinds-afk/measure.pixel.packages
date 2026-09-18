@@ -40,6 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
-/prisma/dev.db
-/prisma/dev.db-journal
+# stray local db files (this project uses Postgres, not SQLite)
+/prisma/*.db
+/prisma/*.db-journal

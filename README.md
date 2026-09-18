@@ -1,26 +1,36 @@
 # Measure Pixel — Modern CRM Platform
 
-Measure Pixel is a full-stack CRM built with Next.js (App Router), TypeScript, Prisma/SQLite and Tailwind CSS. It includes real authentication, role-based access control, and every core CRM module — customers, leads, deals, employees, tasks, follow-ups, calendar, calls, emails, invoices, payments, documents, marketing, reports, activity log, settings, and a dedicated customer portal.
+Measure Pixel is a full-stack CRM built with Next.js (App Router), TypeScript, Prisma/PostgreSQL and Tailwind CSS. It includes real authentication, role-based access control, and every core CRM module — customers, leads, deals, employees, tasks, follow-ups, calendar, calls, emails, invoices, payments, documents, marketing, reports, activity log, settings, and a dedicated customer portal.
 
 ## Tech stack
 
 - **Framework:** Next.js 16 (App Router, Server Actions, Server Components)
-- **Database:** SQLite via Prisma ORM (swap `DATABASE_URL` for Postgres/MySQL in production)
+- **Database:** PostgreSQL via Prisma ORM
 - **Auth:** Credentials + bcrypt password hashing + signed JWT session cookie (`jose`), enforced by `src/middleware.ts`
 - **UI:** Tailwind CSS v4, Radix UI primitives, Recharts, a small in-house design system (`src/components/ui`)
 - **Forms:** react-hook-form + zod validation
 
 ## Getting started
 
+You need a Postgres database. Any of these work and have a free tier: [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres), [Neon](https://neon.tech), [Supabase](https://supabase.com), or a local `postgres` install.
+
 ```bash
 npm install
-cp .env.example .env      # adjust JWT_SECRET for production
-npx prisma db push        # create the SQLite schema
-npm run db:seed           # populate realistic demo data
+cp .env.example .env      # set DATABASE_URL to your Postgres connection string, and a real JWT_SECRET
+npm run db:push            # create the schema in your database
+npm run db:seed            # populate realistic demo data
 npm run dev
 ```
 
 Visit `http://localhost:3000`.
+
+## Deploying to Vercel
+
+1. Create a Postgres database (Vercel Postgres/Neon/Supabase all work) and copy its connection string.
+2. In the Vercel project's Settings → Environment Variables, set `DATABASE_URL` (the Postgres connection string) and `JWT_SECRET` (any long random string).
+3. In Settings → General, confirm **Root Directory** is blank (repo root) and **Framework Preset** is Next.js — a wrong Root Directory is the most common cause of a 404 on every route after deploy.
+4. Before (or right after) the first deploy, run `npm run db:push` locally against that same `DATABASE_URL` to create the tables, then `npm run db:seed` if you want demo data in it too. Deploys don't run these automatically — schema changes to a live database shouldn't happen silently on every push.
+5. Redeploy.
 
 ## Demo accounts
 
@@ -66,6 +76,7 @@ Access is enforced in two layers:
 
 - `npm run dev` — start the dev server
 - `npm run build` / `npm run start` — production build and start
+- `npm run db:push` — sync `prisma/schema.prisma` to the database pointed at by `DATABASE_URL`
 - `npm run db:seed` — re-seed demo data (drops and recreates all rows)
 - `npx prisma studio` — browse the database visually
 

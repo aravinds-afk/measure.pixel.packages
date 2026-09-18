@@ -9,14 +9,15 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
   if (q.length < 2) return NextResponse.json({ groups: [] });
 
+  const ci = { mode: "insensitive" as const };
   const [customers, leads, deals, employees, tasks, invoices, documents] = await Promise.all([
-    prisma.customer.findMany({ where: { OR: [{ name: { contains: q } }, { company: { contains: q } }, { email: { contains: q } }] }, take: 5 }),
-    prisma.lead.findMany({ where: { OR: [{ name: { contains: q } }, { company: { contains: q } }] }, take: 5 }),
-    prisma.deal.findMany({ where: { name: { contains: q } }, take: 5 }),
-    prisma.user.findMany({ where: { name: { contains: q }, role: { not: "CUSTOMER" } }, take: 5 }),
-    prisma.task.findMany({ where: { title: { contains: q } }, take: 5 }),
-    prisma.invoice.findMany({ where: { number: { contains: q } }, take: 5 }),
-    prisma.document.findMany({ where: { name: { contains: q } }, take: 5 }),
+    prisma.customer.findMany({ where: { OR: [{ name: { contains: q, ...ci } }, { company: { contains: q, ...ci } }, { email: { contains: q, ...ci } }] }, take: 5 }),
+    prisma.lead.findMany({ where: { OR: [{ name: { contains: q, ...ci } }, { company: { contains: q, ...ci } }] }, take: 5 }),
+    prisma.deal.findMany({ where: { name: { contains: q, ...ci } }, take: 5 }),
+    prisma.user.findMany({ where: { name: { contains: q, ...ci }, role: { not: "CUSTOMER" } }, take: 5 }),
+    prisma.task.findMany({ where: { title: { contains: q, ...ci } }, take: 5 }),
+    prisma.invoice.findMany({ where: { number: { contains: q, ...ci } }, take: 5 }),
+    prisma.document.findMany({ where: { name: { contains: q, ...ci } }, take: 5 }),
   ]);
 
   const groups = [
