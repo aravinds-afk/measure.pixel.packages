@@ -51,7 +51,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (session && session.role === "CUSTOMER" && !pathname.startsWith("/portal") && !isPublic && pathname !== "/profile") {
+  if (session && session.role === "CUSTOMER" && !pathname.startsWith("/portal") && !isPublic) {
     const url = req.nextUrl.clone();
     url.pathname = "/portal";
     return NextResponse.redirect(url);
