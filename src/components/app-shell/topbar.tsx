@@ -7,7 +7,7 @@ import { QuickAdd } from "@/components/app-shell/quick-add";
 import { NotificationBell } from "@/components/app-shell/notification-bell";
 import { Dropdown, DropdownContent, DropdownItem, DropdownSeparator, DropdownTrigger } from "@/components/ui/dropdown";
 import { logoutAction } from "@/actions/auth";
-import { ROLE_LABELS } from "@/lib/rbac";
+import { ROLE_LABELS, type ModuleKey } from "@/lib/rbac";
 import { initials } from "@/lib/utils";
 import type { Role } from "@prisma/client";
 
@@ -17,6 +17,7 @@ export function Topbar({
   name,
   email,
   role,
+  allowedModules,
   notifications,
   unreadCount,
   onMenuClick,
@@ -24,6 +25,7 @@ export function Topbar({
   name: string;
   email: string;
   role: Role;
+  allowedModules: ModuleKey[];
   notifications: Notif[];
   unreadCount: number;
   onMenuClick: () => void;
@@ -37,7 +39,7 @@ export function Topbar({
         <GlobalSearch />
       </div>
       <div className="flex items-center gap-1.5">
-        <QuickAdd role={role} />
+        <QuickAdd allowedModules={allowedModules} />
         <NotificationBell notifications={notifications} unreadCount={unreadCount} />
         <Dropdown>
           <DropdownTrigger asChild>

@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { employeeSchema, employeeCreateSchema, resetPasswordFormSchema } from "@/lib/validations/employee";
+import { employeeSchema, employeeCreateSchema, resetPasswordFormSchema, type EmployeeInput } from "@/lib/validations/employee";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
 
@@ -97,6 +97,22 @@ export async function updateEmployeeAction(id: string, input: unknown): Promise<
   });
 
   await prisma.activity.create({ data: { userId: session.sub, action: "UPDATE", module: "Employee", description: `updated employee ${employee.name}` } });
+
+  revalidatePath("/employees");
+  revalidatePath(`/employees/${id}`);
+  return { ok: true };
+}
+
+export async function updateEmployeeRoleAction(id: string, role: EmployeeInput["role"]): Promise<ActionResult> {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") return { ok: false, error: "Only Super Admin can change roles." };
+
+  const employee = await prisma.user.findUnique({ where: { id } });
+  if (!employee) return { ok: false, error: "Employee not found." };
+  if (employee.role === "SUPER_ADMIN") return { ok: false, error: "Cannot change the Super Admin's own role." };
+
+  await prisma.user.update({ where: { id }, data: { role } });
+  await prisma.activity.create({ data: { userId: session.sub, action: "UPDATE", module: "Employee", description: `changed ${employee.name}'s role to ${role.replace(/_/g, " ")}` } });
 
   revalidatePath("/employees");
   revalidatePath(`/employees/${id}`);

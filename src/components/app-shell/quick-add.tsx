@@ -4,8 +4,7 @@ import { Plus, UserPlus, Target, Handshake, CheckSquare, ClipboardList, Receipt 
 import { useRouter } from "next/navigation";
 import { Dropdown, DropdownContent, DropdownItem, DropdownLabel, DropdownTrigger } from "@/components/ui/dropdown";
 import { Button } from "@/components/ui/button";
-import { canAccess, type ModuleKey } from "@/lib/rbac";
-import type { Role } from "@prisma/client";
+import { type ModuleKey } from "@/lib/rbac";
 
 const ITEMS: { key: ModuleKey; label: string; href: string; icon: typeof Plus }[] = [
   { key: "customers", label: "Add Customer", href: "/customers?new=1", icon: UserPlus },
@@ -16,9 +15,9 @@ const ITEMS: { key: ModuleKey; label: string; href: string; icon: typeof Plus }[
   { key: "invoices", label: "Create Invoice", href: "/invoices?new=1", icon: Receipt },
 ];
 
-export function QuickAdd({ role }: { role: Role }) {
+export function QuickAdd({ allowedModules }: { allowedModules: ModuleKey[] }) {
   const router = useRouter();
-  const items = ITEMS.filter((i) => canAccess(role, i.key));
+  const items = ITEMS.filter((i) => allowedModules.includes(i.key));
   if (items.length === 0) return null;
 
   return (

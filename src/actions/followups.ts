@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { followUpSchema } from "@/lib/validations/followup";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -13,6 +14,7 @@ function normalize(data: ReturnType<typeof followUpSchema.parse>) {
 export async function createFollowUpAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "followups", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = followUpSchema.safeParse(input);
   if (!parsed.success) {
@@ -31,6 +33,7 @@ export async function createFollowUpAction(input: unknown): Promise<ActionResult
 export async function updateFollowUpAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "followups", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = followUpSchema.safeParse(input);
   if (!parsed.success) {
@@ -47,6 +50,7 @@ export async function updateFollowUpAction(id: string, input: unknown): Promise<
 export async function completeFollowUpAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "followups", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   await prisma.followUp.update({ where: { id }, data: { status: "COMPLETED" } });
   await prisma.activity.create({ data: { userId: session.sub, action: "COMPLETE", module: "FollowUp", description: "completed a follow-up" } });
@@ -58,6 +62,7 @@ export async function completeFollowUpAction(id: string): Promise<ActionResult> 
 export async function deleteFollowUpAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "followups", "delete"))) return { ok: false, error: "You do not have permission to do that." };
 
   await prisma.followUp.delete({ where: { id } });
   revalidatePath("/followups");

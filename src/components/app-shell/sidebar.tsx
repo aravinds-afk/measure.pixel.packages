@@ -6,19 +6,21 @@ import { useState } from "react";
 import { LogOut, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/logo";
 import { NAV_GROUPS } from "@/lib/nav";
-import { canAccess, ROLE_LABELS, type ModuleKey } from "@/lib/rbac";
+import { ROLE_LABELS, type ModuleKey } from "@/lib/rbac";
 import { cn, initials } from "@/lib/utils";
 import type { Role } from "@prisma/client";
 import { logoutAction } from "@/actions/auth";
 
 export function Sidebar({
   role,
+  allowedModules,
   name,
   email,
   mobileOpen,
   onCloseMobile,
 }: {
   role: Role;
+  allowedModules: ModuleKey[];
   name: string;
   email: string;
   mobileOpen: boolean;
@@ -29,7 +31,7 @@ export function Sidebar({
 
   const groups = NAV_GROUPS.map((g) => ({
     ...g,
-    items: g.items.filter((i) => canAccess(role, i.key as ModuleKey)),
+    items: g.items.filter((i) => allowedModules.includes(i.key as ModuleKey)),
   })).filter((g) => g.items.length > 0);
 
   return (

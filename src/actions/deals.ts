@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { dealSchema } from "@/lib/validations/deal";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -14,6 +15,7 @@ function normalize(data: ReturnType<typeof dealSchema.parse>) {
 export async function createDealAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "deals", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = dealSchema.safeParse(input);
   if (!parsed.success) {
@@ -33,6 +35,7 @@ export async function createDealAction(input: unknown): Promise<ActionResult<{ i
 export async function updateDealAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "deals", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = dealSchema.safeParse(input);
   if (!parsed.success) {
@@ -53,6 +56,7 @@ export async function updateDealAction(id: string, input: unknown): Promise<Acti
 export async function updateDealStageAction(id: string, stage: DealStage): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "deals", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const deal = await prisma.deal.update({
     where: { id },
@@ -68,6 +72,7 @@ export async function updateDealStageAction(id: string, stage: DealStage): Promi
 export async function deleteDealAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "deals", "delete"))) return { ok: false, error: "You do not have permission to do that." };
 
   const deal = await prisma.deal.findUnique({ where: { id } });
   if (!deal) return { ok: false, error: "Deal not found." };

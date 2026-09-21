@@ -6,6 +6,53 @@ import { getSession } from "@/lib/session";
 import { companySettingsSchema, userSettingsSchema, passwordChangeSchema } from "@/lib/validations/settings";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
+import { getPermissionsMap, invalidatePermissionsCache, ALL_MODULE_KEYS, type PermissionAction } from "@/lib/permissions";
+import { ROLES, type ModuleKey } from "@/lib/rbac";
+import type { Role } from "@prisma/client";
+
+export async function getRolePermissionsAction() {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") return null;
+  return getPermissionsMap();
+}
+
+const ACTIONS: PermissionAction[] = ["view", "create", "edit", "delete"];
+
+export async function updateRolePermissionAction(
+  role: string,
+  moduleKey: string,
+  action: PermissionAction,
+  value: boolean
+): Promise<ActionResult> {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") return { ok: false, error: "Only Super Admin can change roles and permissions." };
+
+  if (!ROLES.includes(role as Role) || role === "SUPER_ADMIN") return { ok: false, error: "Invalid role." };
+  if (!ALL_MODULE_KEYS.includes(moduleKey as ModuleKey)) return { ok: false, error: "Invalid module." };
+  if (!ACTIONS.includes(action)) return { ok: false, error: "Invalid action." };
+
+  const map = await getPermissionsMap();
+  const current = map[role as Role][moduleKey as ModuleKey] ?? { view: false, create: false, edit: false, delete: false };
+  const next = { ...current, [action]: value };
+  // Create/edit/delete implicitly require view; turning on a write also turns on view.
+  if (value && action !== "view") next.view = true;
+  if (action === "view" && !value) { next.create = false; next.edit = false; next.delete = false; }
+
+  await prisma.rolePermission.upsert({
+    where: { role_module: { role: role as Role, module: moduleKey } },
+    create: { role: role as Role, module: moduleKey, canView: next.view, canCreate: next.create, canEdit: next.edit, canDelete: next.delete },
+    update: { canView: next.view, canCreate: next.create, canEdit: next.edit, canDelete: next.delete },
+  });
+
+  await prisma.activity.create({
+    data: { userId: session.sub, action: "UPDATE", module: "Permissions", description: `updated ${moduleKey} permissions for ${role}` },
+  });
+
+  invalidatePermissionsCache();
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
 
 export async function updateCompanySettingsAction(input: unknown): Promise<ActionResult> {
   const session = await getSession();

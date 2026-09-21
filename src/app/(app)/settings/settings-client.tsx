@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { companySettingsSchema, type CompanySettingsInput, userSettingsSchema, type UserSettingsInput, passwordChangeSchema, type PasswordChangeInput } from "@/lib/validations/settings";
-import { updateCompanySettingsAction, updateUserSettingsAction, changePasswordAction } from "@/actions/settings";
-import { ROLE_LABELS, ROLES, ROLE_MODULES } from "@/lib/rbac";
+import { updateCompanySettingsAction, updateUserSettingsAction, changePasswordAction, updateRolePermissionAction } from "@/actions/settings";
+import { ROLE_LABELS, ROLES, ROLE_MODULES, type ModuleKey } from "@/lib/rbac";
+import type { PermissionsMap, PermissionAction } from "@/lib/permissions";
 import type { Role } from "@prisma/client";
 
 type Company = { name: string; industry: string; address: string; phone: string; email: string; website: string; taxId: string; timezone: string; currency: string; workingHours: string };
@@ -25,8 +26,6 @@ const NOTIF_TYPES = [
   { key: "payment", label: "Payment received" }, { key: "invoice", label: "Invoice overdue" },
 ];
 
-const PERMISSIONS = ["View", "Create", "Edit", "Delete", "Export"];
-
 const CRM_DEFAULTS = {
   "Lead Statuses": ["New", "Contacted", "Qualified", "Proposal", "Negotiation", "Won", "Lost"],
   "Deal Stages": ["New", "Qualified", "Proposal", "Negotiation", "Won", "Lost"],
@@ -35,7 +34,7 @@ const CRM_DEFAULTS = {
   "Payment Methods": ["Bank Transfer", "UPI", "Credit Card", "Debit Card", "Cheque", "Cash"],
 };
 
-export default function SettingsClient({ role, company, user }: { role: Role; company: Company | null; user: UserSettings }) {
+export default function SettingsClient({ role, company, user, permissions }: { role: Role; company: Company | null; user: UserSettings; permissions: PermissionsMap | null }) {
   const isAdmin = role === "SUPER_ADMIN" || role === "ADMIN";
 
   return (
@@ -53,7 +52,7 @@ export default function SettingsClient({ role, company, user }: { role: Role; co
       )}
       <TabsContent value="account"><AccountTab user={user} /></TabsContent>
       {isAdmin && (
-        <TabsContent value="roles"><RolesTab /></TabsContent>
+        <TabsContent value="roles"><RolesTab role={role} permissions={permissions} /></TabsContent>
       )}
       <TabsContent value="notifications"><NotificationsTab /></TabsContent>
       {isAdmin && (
@@ -160,58 +159,138 @@ function AccountTab({ user }: { user: UserSettings }) {
   );
 }
 
-function isPermitted(role: Role, perm: string) {
-  if (role === "SUPER_ADMIN") return true;
-  if (perm === "Delete") return role === "ADMIN" || role === "MANAGER";
-  return true;
+const EDITABLE_ACTIONS: { key: PermissionAction; label: string }[] = [
+  { key: "view", label: "View" },
+  { key: "create", label: "Create" },
+  { key: "edit", label: "Edit" },
+  { key: "delete", label: "Delete" },
+];
+
+function RolesTab({ role, permissions }: { role: Role; permissions: PermissionsMap | null }) {
+  if (role === "SUPER_ADMIN" && permissions) {
+    return <PermissionsEditor permissions={permissions} />;
+  }
+
+  if (!permissions) return null;
+
+  const viewRoles = ROLES.filter((r) => r !== "CUSTOMER");
+  const modules = Array.from(new Set(viewRoles.flatMap((r) => Object.keys(permissions[r] ?? {})))) as ModuleKey[];
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Roles & Permissions</CardTitle><CardDescription>What each role can view, create, edit or delete. Only Super Admin can change these.</CardDescription></CardHeader>
+      <CardContent className="space-y-6">
+        {viewRoles.map((r) => (
+          <div key={r}>
+            <Badge tone="brand" className="mb-2">{ROLE_LABELS[r]}</Badge>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px] text-left text-sm">
+                <thead className="text-xs uppercase text-muted border-b border-border">
+                  <tr><th className="py-2">Module</th>{EDITABLE_ACTIONS.map((a) => <th key={a.key} className="py-2 text-center">{a.label}</th>)}</tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {modules.filter((m) => permissions[r][m]?.view).map((m) => (
+                    <tr key={m}>
+                      <td className="py-2 font-medium text-foreground capitalize">{m}</td>
+                      {EDITABLE_ACTIONS.map((a) => (
+                        <td key={a.key} className="py-2 text-center">
+                          <span className={cn("inline-flex size-6 items-center justify-center rounded-md border", permissions[r][m]?.[a.key] ? "border-brand bg-brand text-white" : "border-border bg-surface text-transparent")}>
+                            <Check className="size-3.5" />
+                          </span>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
 }
 
-function RolesTab() {
+function PermissionsEditor({ permissions }: { permissions: PermissionsMap }) {
+  const { toast } = useToast();
+  const [map, setMap] = useState(permissions);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+
+  const editableRoles = ROLES.filter((r) => r !== "SUPER_ADMIN" && r !== "CUSTOMER");
+  const editableModules = Array.from(new Set(editableRoles.flatMap((r) => Object.keys(map[r] ?? {})))) as ModuleKey[];
+
+  function toggle(role: Role, moduleKey: ModuleKey, action: PermissionAction) {
+    const cellKey = `${role}:${moduleKey}:${action}`;
+    const nextValue = !map[role][moduleKey][action];
+
+    setSavingKey(cellKey);
+    setMap((prev) => {
+      const next = { ...prev, [role]: { ...prev[role], [moduleKey]: { ...prev[role][moduleKey] } } };
+      next[role][moduleKey][action] = nextValue;
+      if (nextValue && action !== "view") next[role][moduleKey].view = true;
+      if (action === "view" && !nextValue) { next[role][moduleKey].create = false; next[role][moduleKey].edit = false; next[role][moduleKey].delete = false; }
+      return next;
+    });
+
+    updateRolePermissionAction(role, moduleKey, action, nextValue).then((res) => {
+      setSavingKey(null);
+      if (!res.ok) {
+        toast({ kind: "error", title: "Could not update permission", description: res.error });
+        setMap(permissions);
+      }
+    });
+  }
+
   return (
     <div className="space-y-5">
       <Card>
-        <CardHeader><CardTitle>Permission matrix</CardTitle><CardDescription>What each role can view, create, edit, delete or export. This reflects the access rules enforced across the app — it's a reference, not an editable control.</CardDescription></CardHeader>
-        <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left text-sm">
-            <thead className="text-xs uppercase text-muted border-b border-border">
-              <tr><th className="py-2">Role</th>{PERMISSIONS.map((p) => <th key={p} className="py-2 text-center">{p}</th>)}</tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {ROLES.filter((r) => r !== "CUSTOMER").map((role) => (
-                <tr key={role}>
-                  <td className="py-2.5 font-medium text-foreground">{ROLE_LABELS[role]}</td>
-                  {PERMISSIONS.map((perm) => (
-                    <td key={perm} className="py-2.5 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex size-6 items-center justify-center rounded-md border",
-                          isPermitted(role, perm) ? "border-brand bg-brand text-white" : "border-border bg-surface text-transparent"
-                        )}
-                      >
-                        <Check className="size-3.5" />
-                      </span>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
+        <CardHeader>
+          <CardTitle>Roles & Permissions</CardTitle>
+          <CardDescription>Turn access on or off per role and module. Changes apply immediately, no redeploy needed. Super Admin always has full access.</CardDescription>
+        </CardHeader>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Module access by role</CardTitle><CardDescription>Reference of which modules each role can navigate to.</CardDescription></CardHeader>
-        <CardContent className="space-y-3">
-          {ROLES.map((role) => (
-            <div key={role} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
-              <Badge tone="brand">{ROLE_LABELS[role]}</Badge>
-              <div className="flex flex-wrap gap-1.5">
-                {ROLE_MODULES[role].map((m) => <span key={m} className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted capitalize">{m}</span>)}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      {editableRoles.map((role) => (
+        <Card key={role}>
+          <CardHeader><CardTitle>{ROLE_LABELS[role]}</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[500px] text-left text-sm">
+              <thead className="text-xs uppercase text-muted border-b border-border">
+                <tr>
+                  <th className="py-2">Module</th>
+                  {EDITABLE_ACTIONS.map((a) => <th key={a.key} className="py-2 text-center">{a.label}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {editableModules.map((moduleKey) => (
+                  <tr key={moduleKey}>
+                    <td className="py-2 font-medium text-foreground capitalize">{moduleKey}</td>
+                    {EDITABLE_ACTIONS.map((a) => {
+                      const value = map[role][moduleKey]?.[a.key] ?? false;
+                      const cellKey = `${role}:${moduleKey}:${a.key}`;
+                      return (
+                        <td key={a.key} className="py-2 text-center">
+                          <button
+                            type="button"
+                            disabled={savingKey === cellKey}
+                            onClick={() => toggle(role, moduleKey, a.key)}
+                            className={cn(
+                              "inline-flex size-6 items-center justify-center rounded-md border transition-colors disabled:opacity-50",
+                              value ? "border-brand bg-brand text-white" : "border-border bg-surface text-transparent hover:border-brand/50"
+                            )}
+                          >
+                            <Check className="size-3.5" />
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

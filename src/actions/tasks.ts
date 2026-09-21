@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { taskSchema } from "@/lib/validations/task";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -14,6 +15,7 @@ function normalize(data: ReturnType<typeof taskSchema.parse>) {
 export async function createTaskAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "tasks", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = taskSchema.safeParse(input);
   if (!parsed.success) {
@@ -35,6 +37,7 @@ export async function createTaskAction(input: unknown): Promise<ActionResult<{ i
 export async function updateTaskAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "tasks", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = taskSchema.safeParse(input);
   if (!parsed.success) {
@@ -53,6 +56,7 @@ export async function updateTaskAction(id: string, input: unknown): Promise<Acti
 export async function updateTaskStatusAction(id: string, status: TaskStatus): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "tasks", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const task = await prisma.task.update({ where: { id }, data: { status } });
   if (status === "COMPLETED") {
@@ -66,6 +70,7 @@ export async function updateTaskStatusAction(id: string, status: TaskStatus): Pr
 export async function deleteTaskAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "tasks", "delete"))) return { ok: false, error: "You do not have permission to do that." };
 
   const task = await prisma.task.findUnique({ where: { id } });
   if (!task) return { ok: false, error: "Task not found." };

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { leadSchema } from "@/lib/validations/lead";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -14,6 +15,7 @@ function normalize(data: ReturnType<typeof leadSchema.parse>) {
 export async function createLeadAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "leads", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = leadSchema.safeParse(input);
   if (!parsed.success) {
@@ -32,6 +34,7 @@ export async function createLeadAction(input: unknown): Promise<ActionResult<{ i
 export async function updateLeadAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "leads", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = leadSchema.safeParse(input);
   if (!parsed.success) {
@@ -51,6 +54,7 @@ export async function updateLeadAction(id: string, input: unknown): Promise<Acti
 export async function updateLeadStatusAction(id: string, status: LeadStatus): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "leads", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const lead = await prisma.lead.update({ where: { id }, data: { status, convertedAt: status === "WON" ? new Date() : undefined } });
   await prisma.activity.create({ data: { userId: session.sub, action: "UPDATE", module: "Lead", description: `moved lead ${lead.name} to ${status.replace(/_/g, " ")}`, leadId: id } });
@@ -62,6 +66,7 @@ export async function updateLeadStatusAction(id: string, status: LeadStatus): Pr
 export async function deleteLeadAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "leads", "delete"))) return { ok: false, error: "You do not have permission to do that." };
 
   const lead = await prisma.lead.findUnique({ where: { id } });
   if (!lead) return { ok: false, error: "Lead not found." };
@@ -76,6 +81,7 @@ export async function deleteLeadAction(id: string): Promise<ActionResult> {
 export async function convertLeadToCustomerAction(id: string): Promise<ActionResult<{ customerId: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "leads", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const lead = await prisma.lead.findUnique({ where: { id } });
   if (!lead) return { ok: false, error: "Lead not found." };

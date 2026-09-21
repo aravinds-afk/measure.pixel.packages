@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { customerSchema } from "@/lib/validations/customer";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -9,6 +10,7 @@ import type { ActionResult } from "@/actions/auth";
 export async function createCustomerAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "customers", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = customerSchema.safeParse(input);
   if (!parsed.success) {
@@ -38,6 +40,7 @@ export async function createCustomerAction(input: unknown): Promise<ActionResult
 export async function updateCustomerAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "customers", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = customerSchema.safeParse(input);
   if (!parsed.success) {
@@ -60,6 +63,7 @@ export async function updateCustomerAction(id: string, input: unknown): Promise<
 export async function deleteCustomerAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "customers", "delete"))) return { ok: false, error: "You do not have permission to do that." };
   if (!["SUPER_ADMIN", "ADMIN", "MANAGER"].includes(session.role)) {
     return { ok: false, error: "You do not have permission to delete customers." };
   }

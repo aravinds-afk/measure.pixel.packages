@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/misc";
+import { getPermissionsMap } from "@/lib/permissions";
 import SettingsClient from "./settings-client";
 
 export default async function SettingsPage() {
@@ -26,6 +27,8 @@ export default async function SettingsPage() {
       }
     : null;
 
+  const permissions = session.role === "SUPER_ADMIN" || session.role === "ADMIN" ? await getPermissionsMap() : null;
+
   return (
     <div>
       <PageHeader
@@ -37,6 +40,7 @@ export default async function SettingsPage() {
         role={session.role}
         company={company}
         user={{ name: user.name, phone: user.phone ?? "", language: user.language, timezone: user.timezone }}
+        permissions={permissions}
       />
     </div>
   );

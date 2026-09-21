@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { invoiceSchema, paymentSchema } from "@/lib/validations/invoice";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
@@ -14,6 +15,7 @@ async function nextInvoiceNumber() {
 export async function createInvoiceAction(input: unknown): Promise<ActionResult<{ id: string }>> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "invoices", "create"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = invoiceSchema.safeParse(input);
   if (!parsed.success) {
@@ -43,6 +45,7 @@ export async function createInvoiceAction(input: unknown): Promise<ActionResult<
 export async function updateInvoiceAction(id: string, input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "invoices", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = invoiceSchema.safeParse(input);
   if (!parsed.success) {
@@ -68,6 +71,7 @@ export async function updateInvoiceAction(id: string, input: unknown): Promise<A
 export async function deleteInvoiceAction(id: string): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "invoices", "delete"))) return { ok: false, error: "You do not have permission to do that." };
 
   await prisma.payment.deleteMany({ where: { invoiceId: id } });
   await prisma.invoiceItem.deleteMany({ where: { invoiceId: id } });
@@ -80,6 +84,7 @@ export async function deleteInvoiceAction(id: string): Promise<ActionResult> {
 export async function recordPaymentAction(input: unknown): Promise<ActionResult> {
   const session = await getSession();
   if (!session) return { ok: false, error: "Not authenticated." };
+  if (!(await can(session.role, "invoices", "edit"))) return { ok: false, error: "You do not have permission to do that." };
 
   const parsed = paymentSchema.safeParse(input);
   if (!parsed.success) {
