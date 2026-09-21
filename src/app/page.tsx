@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Users, Target, GitBranch, Users2, ClipboardList, BarChart3, ShieldCheck, Lock, KeyRound,
   ArrowRight, CheckCircle2, TrendingUp, Wallet, Handshake,
@@ -7,6 +8,8 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/marketing-nav";
 import { Badge } from "@/components/ui/badge";
+import { getSession } from "@/lib/session";
+import { homeForRole } from "@/lib/rbac";
 
 const FEATURES = [
   { icon: Users, title: "Customer Management", desc: "Centralize every customer profile, contact, deal, invoice and interaction in a single organized record." },
@@ -30,7 +33,10 @@ const SECURITY = [
   { icon: ShieldCheck, title: "Complete audit trail", desc: "Every create, update and login is logged for full accountability." },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await getSession();
+  if (session) redirect(homeForRole(session.role));
+
   return (
     <div className="min-h-svh bg-background">
       <MarketingNav />

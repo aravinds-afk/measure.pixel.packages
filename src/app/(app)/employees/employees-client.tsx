@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Plus, Power, Eye } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Power, Eye, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/rbac";
 import { toggleEmployeeStatusAction } from "@/actions/employees";
 import EmployeeFormModal from "./employee-form-modal";
+import ResetPasswordModal from "./reset-password-modal";
 
 type Employee = {
   id: string; name: string; email: string; phone: string | null; department: string | null; designation: string | null;
@@ -25,6 +26,7 @@ export default function EmployeesClient({ initialEmployees }: { initialEmployees
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [resetTarget, setResetTarget] = useState<Employee | null>(null);
   const [, startTransition] = useTransition();
 
   const managers = initialEmployees.filter((e) => ["MANAGER", "ADMIN", "SUPER_ADMIN"].includes(e.role));
@@ -75,6 +77,7 @@ export default function EmployeesClient({ initialEmployees }: { initialEmployees
             <DropdownContent>
               <DropdownItem asChild><Link href={`/employees/${e.id}`}><Eye className="size-4 text-muted" /> View profile</Link></DropdownItem>
               <DropdownItem onSelect={() => { setEditing(e); setFormOpen(true); }}><Pencil className="size-4 text-muted" /> Edit</DropdownItem>
+              <DropdownItem onSelect={() => setResetTarget(e)}><KeyRound className="size-4 text-muted" /> Reset password</DropdownItem>
               <DropdownItem onSelect={() => handleToggle(e)} className={e.status === "ACTIVE" ? "text-danger hover:bg-danger-soft" : ""}>
                 <Power className="size-4" /> {e.status === "ACTIVE" ? "Deactivate" : "Activate"}
               </DropdownItem>
@@ -84,6 +87,7 @@ export default function EmployeesClient({ initialEmployees }: { initialEmployees
       />
 
       <EmployeeFormModal open={formOpen} onOpenChange={setFormOpen} managers={managers} employee={editing} onSuccess={() => { setFormOpen(false); router.refresh(); }} />
+      <ResetPasswordModal open={!!resetTarget} onOpenChange={(o) => !o && setResetTarget(null)} employee={resetTarget} onSuccess={() => { setResetTarget(null); router.refresh(); }} />
     </div>
   );
 }

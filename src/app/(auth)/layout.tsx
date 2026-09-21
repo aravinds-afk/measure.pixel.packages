@@ -1,5 +1,8 @@
+import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { CheckCircle2 } from "lucide-react";
+import { getSession } from "@/lib/session";
+import { homeForRole } from "@/lib/rbac";
 
 const POINTS = [
   "Manage customers, leads and deals in one workspace",
@@ -8,7 +11,10 @@ const POINTS = [
   "Real-time revenue and pipeline analytics",
 ];
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+  if (session) redirect(homeForRole(session.role));
+
   return (
     <div className="grid min-h-svh grid-cols-1 lg:grid-cols-2 bg-background">
       <div className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-16">

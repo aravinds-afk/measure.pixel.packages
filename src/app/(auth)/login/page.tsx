@@ -9,15 +9,6 @@ import { Input, Label, FieldError } from "@/components/ui/input";
 import { loginAction } from "@/actions/auth";
 import { loginSchema } from "@/lib/validations/auth";
 
-const DEMO_ACCOUNTS = [
-  { role: "Super Admin", email: "superadmin@measurepixel.com" },
-  { role: "Admin", email: "admin@measurepixel.com" },
-  { role: "Manager", email: "manager@measurepixel.com" },
-  { role: "Sales Executive", email: "sales1@measurepixel.com" },
-  { role: "Employee", email: "employee1@measurepixel.com" },
-  { role: "Customer", email: "customer@measurepixel.com" },
-];
-
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -124,25 +115,6 @@ function LoginForm() {
           {pending ? "Signing in..." : "Sign in"}
         </Button>
       </form>
-
-      <div className="mt-8 rounded-xl border border-border bg-surface-2 p-4">
-        <p className="text-xs font-medium text-foreground mb-2.5">Quick demo access (password: Password123!)</p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {DEMO_ACCOUNTS.map((acc) => (
-            <button
-              key={acc.email}
-              type="button"
-              onClick={() => {
-                setEmail(acc.email);
-                setPassword("Password123!");
-              }}
-              className="rounded-md border border-border bg-surface px-2 py-1.5 text-left text-xs text-muted hover:text-foreground hover:border-brand/40 transition-colors"
-            >
-              {acc.role}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <p className="mt-6 text-center text-sm text-muted">
         Don&apos;t have a workspace? <Link href="/" className="text-brand font-medium hover:underline">Back to homepage</Link>

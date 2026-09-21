@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Wand2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Label, FieldError, HelpText } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import { employeeSchema, type EmployeeInput } from "@/lib/validations/employee";
+import { employeeSchema, type EmployeeInput, generateSecurePassword, resetPasswordFormSchema } from "@/lib/validations/employee";
 import { createEmployeeAction, updateEmployeeAction } from "@/actions/employees";
 import { ROLE_LABELS } from "@/lib/rbac";
 
@@ -23,6 +24,10 @@ export default function EmployeeFormModal({
   const [pending, startTransition] = useTransition();
   const isEdit = !!employee;
 
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [showPassword, setShowPassword] = useState(false);
+
   const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<EmployeeInput>({
     resolver: zodResolver(employeeSchema),
     defaultValues: { role: "EMPLOYEE", status: "ACTIVE" },
@@ -35,18 +40,35 @@ export default function EmployeeFormModal({
           ? { name: employee.name, email: employee.email, phone: employee.phone ?? "", department: employee.department ?? "", designation: employee.designation ?? "", role: employee.role as EmployeeInput["role"], managerId: employee.manager?.id ?? "", status: employee.status as EmployeeInput["status"] }
           : { name: "", email: "", phone: "", department: "", designation: "", role: "EMPLOYEE", managerId: "", status: "ACTIVE" }
       );
+      setPassword("");
+      setPasswordError(undefined);
     }
   }, [open, employee, reset]);
 
   function onSubmit(data: EmployeeInput) {
-    startTransition(async () => {
-      const res = isEdit ? await updateEmployeeAction(employee!.id, data) : await createEmployeeAction(data);
-      if (!res.ok) {
-        toast({ kind: "error", title: "Could not save employee", description: res.error });
-        if (res.fieldErrors) for (const [k, v] of Object.entries(res.fieldErrors)) setError(k as keyof EmployeeInput, { message: v });
+    if (!isEdit) {
+      const check = resetPasswordFormSchema.shape.password.safeParse(password);
+      if (!check.success) {
+        setPasswordError(check.error.issues[0]?.message);
         return;
       }
-      toast({ kind: "success", title: isEdit ? "Employee updated" : "Employee added", description: isEdit ? undefined : "Default password: Welcome123!" });
+    }
+
+    startTransition(async () => {
+      const res = isEdit
+        ? await updateEmployeeAction(employee!.id, data)
+        : await createEmployeeAction({ ...data, password });
+      if (!res.ok) {
+        toast({ kind: "error", title: "Could not save employee", description: res.error });
+        if (res.fieldErrors) {
+          for (const [k, v] of Object.entries(res.fieldErrors)) {
+            if (k === "password") setPasswordError(v);
+            else setError(k as keyof EmployeeInput, { message: v });
+          }
+        }
+        return;
+      }
+      toast({ kind: "success", title: isEdit ? "Employee updated" : "Employee added" });
       onSuccess();
     });
   }
@@ -56,7 +78,7 @@ export default function EmployeeFormModal({
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit employee" : "Add employee"}
-      description={isEdit ? "Update employee details and access." : "New employees receive the default password Welcome123!"}
+      description={isEdit ? "Update employee details and access." : "Set the login email and password this person will use to sign in."}
       footer={
         <>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -71,11 +93,47 @@ export default function EmployeeFormModal({
           <FieldError>{errors.name?.message}</FieldError>
         </div>
         <div>
-          <Label required>Email</Label>
+          <Label required>Login email</Label>
           <Input type="email" disabled={isEdit} {...register("email")} aria-invalid={!!errors.email} />
           <FieldError>{errors.email?.message}</FieldError>
           {isEdit && <HelpText>Email cannot be changed</HelpText>}
         </div>
+
+        {!isEdit && (
+          <div className="sm:col-span-2">
+            <Label required>Login password</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setPasswordError(undefined); }}
+                  aria-invalid={!!passwordError}
+                  className="pr-10"
+                  placeholder="Set a password for this account"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setPassword(generateSecurePassword()); setPasswordError(undefined); setShowPassword(true); }}
+              >
+                <Wand2 className="size-4" /> Generate
+              </Button>
+            </div>
+            <FieldError>{passwordError}</FieldError>
+            <HelpText>At least 8 characters, with an uppercase letter and a number. Share this with them directly — it won&apos;t be shown again.</HelpText>
+          </div>
+        )}
+
         <div>
           <Label>Phone</Label>
           <Input {...register("phone")} />

@@ -3,11 +3,9 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { employeeSchema } from "@/lib/validations/employee";
+import { employeeSchema, employeeCreateSchema, resetPasswordFormSchema } from "@/lib/validations/employee";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/actions/auth";
-
-const DEFAULT_PASSWORD = "Welcome123!";
 
 function requireAdmin(role: string) {
   return ["SUPER_ADMIN", "ADMIN"].includes(role);
@@ -17,7 +15,7 @@ export async function createEmployeeAction(input: unknown): Promise<ActionResult
   const session = await getSession();
   if (!session || !requireAdmin(session.role)) return { ok: false, error: "You do not have permission to add employees." };
 
-  const parsed = employeeSchema.safeParse(input);
+  const parsed = employeeCreateSchema.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0])] = issue.message;
@@ -28,7 +26,7 @@ export async function createEmployeeAction(input: unknown): Promise<ActionResult
   if (existing) return { ok: false, error: "An account with this email already exists.", fieldErrors: { email: "Already in use" } };
 
   const me = await prisma.user.findUnique({ where: { id: session.sub } });
-  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+  const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   const employee = await prisma.user.create({
     data: {
       name: parsed.data.name,
@@ -48,6 +46,30 @@ export async function createEmployeeAction(input: unknown): Promise<ActionResult
 
   revalidatePath("/employees");
   return { ok: true, data: { id: employee.id } };
+}
+
+export async function resetEmployeePasswordAction(id: string, input: unknown): Promise<ActionResult> {
+  const session = await getSession();
+  if (!session || !requireAdmin(session.role)) return { ok: false, error: "You do not have permission to reset passwords." };
+
+  const parsed = resetPasswordFormSchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0])] = issue.message;
+    return { ok: false, error: "Please fix the errors below.", fieldErrors };
+  }
+
+  const employee = await prisma.user.findUnique({ where: { id } });
+  if (!employee) return { ok: false, error: "Employee not found." };
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+  // Invalidate any session currently open for this account so the new password takes effect immediately.
+  await prisma.user.update({ where: { id }, data: { passwordHash, activeSessionId: null } });
+
+  await prisma.activity.create({ data: { userId: session.sub, action: "UPDATE", module: "Employee", description: `reset password for ${employee.name}` } });
+
+  revalidatePath("/employees");
+  return { ok: true };
 }
 
 export async function updateEmployeeAction(id: string, input: unknown): Promise<ActionResult> {

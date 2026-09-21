@@ -38,12 +38,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (session && (pathname === "/login" || pathname === "/")) {
-    const url = req.nextUrl.clone();
-    url.pathname = session.role === "CUSTOMER" ? "/portal" : "/dashboard";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
+  // Note: deliberately NOT bouncing authenticated visitors away from "/" or
+  // "/login" here. This check only verifies the JWT signature, but sessions
+  // can also be invalidated in the DB (single-active-session enforcement) —
+  // that's checked by getSession() in the (auth) layout and root page,
+  // which is the DB-aware source of truth for "am I really still logged
+  // in". Doing the bounce here too, from a stale-but-signature-valid
+  // cookie, would redirect straight back to a page that immediately
+  // redirects to /login again, looping forever.
 
   if (session && pathname.startsWith("/portal") && session.role !== "CUSTOMER") {
     const url = req.nextUrl.clone();

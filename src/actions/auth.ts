@@ -53,6 +53,7 @@ export async function loginAction(input: unknown): Promise<ActionResult<{ redire
 export async function logoutAction() {
   const session = await getSession();
   if (session) {
+    await prisma.user.update({ where: { id: session.sub }, data: { activeSessionId: null } });
     await prisma.activity.create({
       data: { userId: session.sub, action: "LOGOUT", module: "Auth", description: "logged out of Measure Pixel" },
     });
@@ -99,7 +100,7 @@ export async function resetPasswordAction(input: unknown): Promise<ActionResult>
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.update({
     where: { id: user.id },
-    data: { passwordHash, resetToken: null, resetTokenExpiry: null },
+    data: { passwordHash, resetToken: null, resetTokenExpiry: null, activeSessionId: null },
   });
 
   return { ok: true };
