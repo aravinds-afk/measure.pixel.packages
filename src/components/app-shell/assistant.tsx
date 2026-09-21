@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bot, Mic, MicOff, Send, X, Volume2 } from "lucide-react";
+import { Bot, Mic, MicOff, Send, X, Volume2, Ear, EarOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { runAssistantCommand } from "@/actions/assistant";
 import { ROLE_LABELS, type ModuleKey } from "@/lib/rbac";
@@ -10,17 +10,29 @@ import type { Role } from "@prisma/client";
 
 type Message = { role: "user" | "assistant"; text: string };
 
+const WAKE_PHRASES = ["hey buddy", "hi buddy", "ok buddy", "okay buddy"];
+const WAKE_WORD_PREF_KEY = "mp-assistant-wake-word";
+
 // Minimal shape of the browser SpeechRecognition API (not in TS lib.dom yet).
 type SpeechRecognitionLike = {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
-  onresult: ((e: { results: { [i: number]: { [j: number]: { transcript: string } } }; resultIndex: number }) => void) | null;
+  onresult: ((e: { results: { [i: number]: { [j: number]: { transcript: string }; isFinal?: boolean }; length: number }; resultIndex: number }) => void) | null;
   onend: (() => void) | null;
   onerror: (() => void) | null;
   start: () => void;
   stop: () => void;
 };
+
+function matchWakePhrase(transcript: string): string | null {
+  const lower = transcript.toLowerCase();
+  for (const phrase of WAKE_PHRASES) {
+    const idx = lower.indexOf(phrase);
+    if (idx !== -1) return transcript.slice(idx + phrase.length).replace(/^[,.\s]+/, "").trim();
+  }
+  return null;
+}
 
 function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === "undefined") return null;
@@ -30,10 +42,14 @@ function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
 
 function speak(text: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1.02;
-  window.speechSynthesis.speak(utterance);
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.02;
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    // Voice output is a nice-to-have; a synthesis failure shouldn't break the command flow.
+  }
 }
 
 export function Assistant({ role, allowedModules }: { role: Role; allowedModules: ModuleKey[] }) {
@@ -43,14 +59,22 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
   const [pending, setPending] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", text: `Hi, I'm your assistant. I can help based on what your role (${ROLE_LABELS[role]}) can access. Try "open leads" or "add task follow up with Acme".` },
+    { role: "assistant", text: `Hi, I'm your assistant. I can help based on what your role (${ROLE_LABELS[role]}) can access. Try "open leads" or "add task follow up with Acme". Turn on the wake word to say "hey buddy" instead of typing.` },
   ]);
   const [voiceSupported, setVoiceSupported] = useState(false);
+  const [wakeWordOn, setWakeWordOn] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const wakeRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const wakeArmedRef = useRef(false);
+  const wakeWordOnRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sendRef = useRef<(text: string) => void>(() => {});
 
   useEffect(() => {
     setVoiceSupported(!!getSpeechRecognition());
+    try {
+      if (localStorage.getItem(WAKE_WORD_PREF_KEY) === "1") setWakeWordOn(true);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -101,6 +125,79 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
     setListening(true);
   }
 
+  useEffect(() => {
+    sendRef.current = send;
+  });
+
+  // Always-on wake-word listener: says "Yes?" and captures the next phrase as a command.
+  useEffect(() => {
+    const SpeechRecognitionCtor = getSpeechRecognition();
+    if (!SpeechRecognitionCtor) return;
+
+    wakeWordOnRef.current = wakeWordOn;
+    try {
+      localStorage.setItem(WAKE_WORD_PREF_KEY, wakeWordOn ? "1" : "0");
+    } catch {}
+
+    if (!wakeWordOn) {
+      wakeRecognitionRef.current?.stop();
+      wakeRecognitionRef.current = null;
+      return;
+    }
+
+    let stopped = false;
+
+    function startWakeListener() {
+      if (stopped || !wakeWordOnRef.current) return;
+      const SpeechRecognitionCtor = getSpeechRecognition();
+      if (!SpeechRecognitionCtor) return;
+      const recognition = new SpeechRecognitionCtor();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+      recognition.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const result = e.results[i];
+          if (!result) continue;
+          const transcript = result[0]?.transcript ?? "";
+          if (!transcript) continue;
+
+          if (wakeArmedRef.current) {
+            wakeArmedRef.current = false;
+            sendRef.current(transcript);
+            continue;
+          }
+
+          const command = matchWakePhrase(transcript);
+          if (command === null) continue;
+          setOpen(true);
+          if (command) {
+            sendRef.current(command);
+          } else {
+            wakeArmedRef.current = true;
+            speak("Yes?");
+          }
+        }
+      };
+      recognition.onerror = () => {};
+      recognition.onend = () => {
+        if (!stopped && wakeWordOnRef.current) {
+          try { recognition.start(); } catch {}
+        }
+      };
+      wakeRecognitionRef.current = recognition;
+      try { recognition.start(); } catch {}
+    }
+
+    startWakeListener();
+    return () => {
+      stopped = true;
+      wakeRecognitionRef.current?.stop();
+      wakeRecognitionRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wakeWordOn]);
+
   if (!open) {
     return (
       <button
@@ -109,6 +206,9 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
         aria-label="Open assistant"
       >
         <Bot className="size-6" />
+        {wakeWordOn && (
+          <span className="absolute right-0.5 top-0.5 size-2.5 rounded-full bg-success ring-2 ring-surface" title="Listening for 'hey buddy'" />
+        )}
       </button>
     );
   }
@@ -123,10 +223,30 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
             <p className="text-xs text-muted">{ROLE_LABELS[role]} access · {allowedModules.length} modules</p>
           </div>
         </div>
-        <button onClick={() => setOpen(false)} className="text-muted hover:text-foreground">
-          <X className="size-4.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {voiceSupported && (
+            <button
+              onClick={() => setWakeWordOn((v) => !v)}
+              className={cn(
+                "flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-medium",
+                wakeWordOn ? "bg-success-soft text-success" : "text-muted hover:text-foreground"
+              )}
+              title={wakeWordOn ? "Wake word on — say \"hey buddy\"" : "Turn on wake word (\"hey buddy\")"}
+            >
+              {wakeWordOn ? <Ear className="size-3.5" /> : <EarOff className="size-3.5" />}
+              {wakeWordOn ? "On" : "Off"}
+            </button>
+          )}
+          <button onClick={() => setOpen(false)} className="text-muted hover:text-foreground">
+            <X className="size-4.5" />
+          </button>
+        </div>
       </div>
+      {wakeWordOn && (
+        <p className="border-b border-border bg-success-soft px-4 py-1.5 text-[11px] text-success">
+          Listening for "hey buddy"…
+        </p>
+      )}
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto scrollbar-thin p-4">
         {messages.map((m, i) => (
@@ -148,7 +268,7 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
         className="flex items-center gap-2 border-t border-border p-3"
         onSubmit={(e) => { e.preventDefault(); send(input); }}
       >
-        {voiceSupported && (
+        {voiceSupported && !wakeWordOn && (
           <button
             type="button"
             onClick={toggleListening}
