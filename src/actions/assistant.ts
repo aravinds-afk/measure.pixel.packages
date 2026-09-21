@@ -3,9 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { can } from "@/lib/permissions";
-import { createTaskAction } from "@/actions/tasks";
-import { updateLeadStatusAction } from "@/actions/leads";
-import { updateDealStageAction } from "@/actions/deals";
+import { createTaskAction, updateTaskStatusAction, deleteTaskAction } from "@/actions/tasks";
+import { updateLeadStatusAction, deleteLeadAction } from "@/actions/leads";
+import { updateDealStageAction, deleteDealAction } from "@/actions/deals";
+import { createCustomerAction, deleteCustomerAction } from "@/actions/customers";
 import { updateEmployeeRoleAction } from "@/actions/employees";
 import { MODULE_ROUTE_PREFIX, ROLE_LABELS, ROLES, type ModuleKey } from "@/lib/rbac";
 import type { LeadStatus, DealStage, Role } from "@prisma/client";
@@ -79,6 +80,74 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
     return { reply: `Added task: "${title}".`, navigateTo: "/tasks" };
   }
 
+  // Complete/delete task: "complete task <title>", "mark task <title> done", "delete task <title>"
+  const completeTaskMatch = text.match(/^(?:complete|finish|mark)\s+task\s+(.+?)(?:\s+as\s+done|\s+done|\s+complete)?$/);
+  if (completeTaskMatch) {
+    const title = completeTaskMatch[1].trim();
+    if (!(await can(session.role, "tasks", "edit"))) return { reply: "You don't have permission to update tasks." };
+    const task = await prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } });
+    if (!task) return { reply: `I couldn't find a task called "${title}".` };
+    const res = await updateTaskStatusAction(task.id, "COMPLETED");
+    if (!res.ok) return { reply: `Couldn't complete that task: ${res.error}` };
+    return { reply: `Marked "${task.title}" as complete.`, navigateTo: "/tasks" };
+  }
+
+  const deleteTaskMatch = text.match(/^delete task\s+(.+)/);
+  if (deleteTaskMatch) {
+    const title = deleteTaskMatch[1].trim();
+    if (!(await can(session.role, "tasks", "delete"))) return { reply: "You don't have permission to delete tasks." };
+    const task = await prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } });
+    if (!task) return { reply: `I couldn't find a task called "${title}".` };
+    const res = await deleteTaskAction(task.id);
+    if (!res.ok) return { reply: `Couldn't delete that task: ${res.error}` };
+    return { reply: `Deleted task "${task.title}".`, navigateTo: "/tasks" };
+  }
+
+  // Quick customer: "add customer <name> phone <phone> email <email>"
+  const customerMatch = text.match(/^(?:add|create)(?: a)? customer\s+(.+?)(?:\s+phone\s+([\d+\-\s()]+?))?(?:\s+email\s+(\S+))?$/);
+  if (customerMatch) {
+    const [, name, phone, email] = customerMatch;
+    if (!phone || !email) return { reply: `To add a customer I need a phone and email too, e.g. "add customer ${name.trim()} phone 9876543210 email name@example.com".` };
+    if (!(await can(session.role, "customers", "create"))) return { reply: "You don't have permission to create customers." };
+    const res = await createCustomerAction({ name: name.trim(), phone: phone.trim(), email: email.trim(), status: "PROSPECT" });
+    if (!res.ok) return { reply: `Couldn't create that customer: ${res.error}` };
+    return { reply: `Added customer "${name.trim()}".`, navigateTo: `/customers/${res.data?.id ?? ""}` };
+  }
+
+  // Delete customer/lead/deal: "delete customer <name>", "delete lead <name>", "delete deal <name>"
+  const deleteCustomerMatch = text.match(/^delete customer\s+(.+)/);
+  if (deleteCustomerMatch) {
+    const name = deleteCustomerMatch[1].trim();
+    if (!(await can(session.role, "customers", "delete"))) return { reply: "You don't have permission to delete customers." };
+    const customer = await prisma.customer.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    if (!customer) return { reply: `I couldn't find a customer named "${name}".` };
+    const res = await deleteCustomerAction(customer.id);
+    if (!res.ok) return { reply: `Couldn't delete that customer: ${res.error}` };
+    return { reply: `Deleted customer "${customer.name}".`, navigateTo: "/customers" };
+  }
+
+  const deleteLeadMatch = text.match(/^delete lead\s+(.+)/);
+  if (deleteLeadMatch) {
+    const name = deleteLeadMatch[1].trim();
+    if (!(await can(session.role, "leads", "delete"))) return { reply: "You don't have permission to delete leads." };
+    const lead = await prisma.lead.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    if (!lead) return { reply: `I couldn't find a lead named "${name}".` };
+    const res = await deleteLeadAction(lead.id);
+    if (!res.ok) return { reply: `Couldn't delete that lead: ${res.error}` };
+    return { reply: `Deleted lead "${lead.name}".`, navigateTo: "/leads" };
+  }
+
+  const deleteDealMatch = text.match(/^delete deal\s+(.+)/);
+  if (deleteDealMatch) {
+    const name = deleteDealMatch[1].trim();
+    if (!(await can(session.role, "deals", "delete"))) return { reply: "You don't have permission to delete deals." };
+    const deal = await prisma.deal.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    if (!deal) return { reply: `I couldn't find a deal named "${name}".` };
+    const res = await deleteDealAction(deal.id);
+    if (!res.ok) return { reply: `Couldn't delete that deal: ${res.error}` };
+    return { reply: `Deleted deal "${deal.name}".`, navigateTo: "/deals" };
+  }
+
   // Lead status: "mark lead <name> as <status>"
   const leadMatch = text.match(/^mark lead\s+(.+?)\s+as\s+(\w+)/);
   if (leadMatch) {
@@ -134,8 +203,9 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
 
   return {
     reply:
-      "I can navigate (\"open leads\"), add a task (\"add task call John tomorrow\"), update a lead or deal (\"mark deal Acme as won\")" +
-      (session.role === "SUPER_ADMIN" ? ", or change someone's role (\"make Priya a manager\")." : "."),
+      "I can navigate (\"open leads\"), add or complete a task, add a customer, update or delete a lead/deal/customer/task" +
+      (session.role === "SUPER_ADMIN" ? ", change someone's role, or open Roles & Permissions" : "") +
+      " — anything beyond what your role allows, I'll say so.",
   };
 }
 
