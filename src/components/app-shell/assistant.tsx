@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bot, Mic, MicOff, Send, X, Volume2, Ear, EarOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { runAssistantCommand } from "@/actions/assistant";
+import { parseNavigationCommand } from "@/lib/assistant-nlu";
 import { ROLE_LABELS, type ModuleKey } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
 
@@ -86,6 +87,20 @@ export function Assistant({ role, allowedModules }: { role: Role; allowedModules
     if (!trimmed || pending) return;
     setMessages((m) => [...m, { role: "user", text: trimmed }]);
     setInput("");
+
+    // Navigation ("open leads") never needs the server — the allowed module list
+    // is already on the client, so respond and route instantly instead of waiting
+    // on a round trip.
+    const nav = parseNavigationCommand(trimmed);
+    if (nav) {
+      const allowed = allowedModules.includes(nav.moduleKey) || nav.moduleKey === "dashboard" || nav.moduleKey === "profile";
+      const reply = allowed ? `Opening ${nav.moduleKey}.` : `You don't have access to ${nav.moduleKey}.`;
+      setMessages((m) => [...m, { role: "assistant", text: reply }]);
+      speak(reply);
+      if (allowed) router.push(nav.href);
+      return;
+    }
+
     setPending(true);
     try {
       const result = await runAssistantCommand(trimmed);

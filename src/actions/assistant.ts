@@ -8,32 +8,11 @@ import { updateLeadStatusAction, deleteLeadAction } from "@/actions/leads";
 import { updateDealStageAction, deleteDealAction } from "@/actions/deals";
 import { createCustomerAction, deleteCustomerAction } from "@/actions/customers";
 import { updateEmployeeRoleAction } from "@/actions/employees";
-import { MODULE_ROUTE_PREFIX, ROLE_LABELS, ROLES, type ModuleKey } from "@/lib/rbac";
+import { MODULE_ROUTE_PREFIX, ROLE_LABELS, ROLES } from "@/lib/rbac";
+import { findModule } from "@/lib/assistant-nlu";
 import type { LeadStatus, DealStage, Role } from "@prisma/client";
 
 export type AssistantResult = { reply: string; navigateTo?: string };
-
-const MODULE_ALIASES: Record<string, ModuleKey> = {
-  dashboard: "dashboard", home: "dashboard",
-  customer: "customers", customers: "customers",
-  lead: "leads", leads: "leads",
-  deal: "deals", deals: "deals", pipeline: "deals",
-  employee: "employees", employees: "employees", team: "team",
-  task: "tasks", tasks: "tasks",
-  followup: "followups", "follow-up": "followups", "follow up": "followups", followups: "followups",
-  calendar: "calendar",
-  call: "calls", calls: "calls",
-  email: "emails", emails: "emails",
-  notification: "notifications", notifications: "notifications",
-  invoice: "invoices", invoices: "invoices",
-  payment: "payments", payments: "payments",
-  report: "reports", reports: "reports",
-  document: "documents", documents: "documents",
-  marketing: "marketing",
-  activity: "activity",
-  settings: "settings",
-  profile: "profile",
-};
 
 const LEAD_STATUS_WORDS: Record<string, LeadStatus> = {
   new: "NEW", contacted: "CONTACTED", qualified: "QUALIFIED", proposal: "PROPOSAL",
@@ -44,13 +23,6 @@ const DEAL_STAGE_WORDS: Record<string, DealStage> = {
   new: "NEW", qualified: "QUALIFIED", proposal: "PROPOSAL",
   negotiation: "NEGOTIATION", won: "WON", lost: "LOST",
 };
-
-function findModule(text: string): ModuleKey | null {
-  for (const [alias, key] of Object.entries(MODULE_ALIASES)) {
-    if (text.includes(alias)) return key;
-  }
-  return null;
-}
 
 export async function runAssistantCommand(rawText: string): Promise<AssistantResult> {
   const session = await getSession();
@@ -84,8 +56,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
   const completeTaskMatch = text.match(/^(?:complete|finish|mark)\s+task\s+(.+?)(?:\s+as\s+done|\s+done|\s+complete)?$/);
   if (completeTaskMatch) {
     const title = completeTaskMatch[1].trim();
-    if (!(await can(session.role, "tasks", "edit"))) return { reply: "You don't have permission to update tasks." };
-    const task = await prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } });
+    const [allowed, task] = await Promise.all([
+      can(session.role, "tasks", "edit"),
+      prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to update tasks." };
     if (!task) return { reply: `I couldn't find a task called "${title}".` };
     const res = await updateTaskStatusAction(task.id, "COMPLETED");
     if (!res.ok) return { reply: `Couldn't complete that task: ${res.error}` };
@@ -95,8 +70,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
   const deleteTaskMatch = text.match(/^delete task\s+(.+)/);
   if (deleteTaskMatch) {
     const title = deleteTaskMatch[1].trim();
-    if (!(await can(session.role, "tasks", "delete"))) return { reply: "You don't have permission to delete tasks." };
-    const task = await prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } });
+    const [allowed, task] = await Promise.all([
+      can(session.role, "tasks", "delete"),
+      prisma.task.findFirst({ where: { title: { contains: title, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to delete tasks." };
     if (!task) return { reply: `I couldn't find a task called "${title}".` };
     const res = await deleteTaskAction(task.id);
     if (!res.ok) return { reply: `Couldn't delete that task: ${res.error}` };
@@ -118,8 +96,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
   const deleteCustomerMatch = text.match(/^delete customer\s+(.+)/);
   if (deleteCustomerMatch) {
     const name = deleteCustomerMatch[1].trim();
-    if (!(await can(session.role, "customers", "delete"))) return { reply: "You don't have permission to delete customers." };
-    const customer = await prisma.customer.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    const [allowed, customer] = await Promise.all([
+      can(session.role, "customers", "delete"),
+      prisma.customer.findFirst({ where: { name: { contains: name, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to delete customers." };
     if (!customer) return { reply: `I couldn't find a customer named "${name}".` };
     const res = await deleteCustomerAction(customer.id);
     if (!res.ok) return { reply: `Couldn't delete that customer: ${res.error}` };
@@ -129,8 +110,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
   const deleteLeadMatch = text.match(/^delete lead\s+(.+)/);
   if (deleteLeadMatch) {
     const name = deleteLeadMatch[1].trim();
-    if (!(await can(session.role, "leads", "delete"))) return { reply: "You don't have permission to delete leads." };
-    const lead = await prisma.lead.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    const [allowed, lead] = await Promise.all([
+      can(session.role, "leads", "delete"),
+      prisma.lead.findFirst({ where: { name: { contains: name, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to delete leads." };
     if (!lead) return { reply: `I couldn't find a lead named "${name}".` };
     const res = await deleteLeadAction(lead.id);
     if (!res.ok) return { reply: `Couldn't delete that lead: ${res.error}` };
@@ -140,8 +124,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
   const deleteDealMatch = text.match(/^delete deal\s+(.+)/);
   if (deleteDealMatch) {
     const name = deleteDealMatch[1].trim();
-    if (!(await can(session.role, "deals", "delete"))) return { reply: "You don't have permission to delete deals." };
-    const deal = await prisma.deal.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    const [allowed, deal] = await Promise.all([
+      can(session.role, "deals", "delete"),
+      prisma.deal.findFirst({ where: { name: { contains: name, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to delete deals." };
     if (!deal) return { reply: `I couldn't find a deal named "${name}".` };
     const res = await deleteDealAction(deal.id);
     if (!res.ok) return { reply: `Couldn't delete that deal: ${res.error}` };
@@ -154,8 +141,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
     const [, name, statusWord] = leadMatch;
     const status = LEAD_STATUS_WORDS[statusWord];
     if (!status) return { reply: `I don't know the lead status "${statusWord}".` };
-    if (!(await can(session.role, "leads", "edit"))) return { reply: "You don't have permission to update leads." };
-    const lead = await prisma.lead.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    const [allowed, lead] = await Promise.all([
+      can(session.role, "leads", "edit"),
+      prisma.lead.findFirst({ where: { name: { contains: name, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to update leads." };
     if (!lead) return { reply: `I couldn't find a lead named "${name}".` };
     const res = await updateLeadStatusAction(lead.id, status);
     if (!res.ok) return { reply: `Couldn't update that lead: ${res.error}` };
@@ -168,8 +158,11 @@ export async function runAssistantCommand(rawText: string): Promise<AssistantRes
     const [, name, stageWord] = dealMatch;
     const stage = DEAL_STAGE_WORDS[stageWord];
     if (!stage) return { reply: `I don't know the deal stage "${stageWord}".` };
-    if (!(await can(session.role, "deals", "edit"))) return { reply: "You don't have permission to update deals." };
-    const deal = await prisma.deal.findFirst({ where: { name: { contains: name, mode: "insensitive" } } });
+    const [allowed, deal] = await Promise.all([
+      can(session.role, "deals", "edit"),
+      prisma.deal.findFirst({ where: { name: { contains: name, mode: "insensitive" } } }),
+    ]);
+    if (!allowed) return { reply: "You don't have permission to update deals." };
     if (!deal) return { reply: `I couldn't find a deal named "${name}".` };
     const res = await updateDealStageAction(deal.id, stage);
     if (!res.ok) return { reply: `Couldn't update that deal: ${res.error}` };
