@@ -206,6 +206,13 @@ function RolesTab({ role, permissions }: { role: Role; permissions: PermissionsM
             </div>
           </div>
         ))}
+        <div>
+          <Badge tone="brand" className="mb-2">Customer</Badge>
+          <p className="mb-2 text-xs text-muted">Customers sign in to a separate portal with the same fixed access for everyone.</p>
+          <div className="flex flex-wrap gap-1.5">
+            {ROLE_MODULES.CUSTOMER.map((m) => <span key={m} className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted capitalize">{m}</span>)}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -291,6 +298,16 @@ function PermissionsEditor({ permissions }: { permissions: PermissionsMap }) {
           </CardContent>
         </Card>
       ))}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Customer</CardTitle>
+          <CardDescription>Customers sign in to a separate Customer Portal, not the main CRM. Every customer gets the same fixed access — there's no per-customer tiering to toggle.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-1.5">
+          {ROLE_MODULES.CUSTOMER.map((m) => <span key={m} className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted capitalize">{m}</span>)}
+        </CardContent>
+      </Card>
     </div>
   );
 }
