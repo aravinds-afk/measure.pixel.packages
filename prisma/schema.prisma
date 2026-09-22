@@ -1,0 +1,453 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  SALES_EXECUTIVE
+  EMPLOYEE
+  CUSTOMER
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum DealStage {
+  NEW
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  PROSPECT
+  CHURNED
+}
+
+enum FollowUpType {
+  PHONE
+  EMAIL
+  MEETING
+  DEMO
+  PROPOSAL
+  PAYMENT
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum CallDirection {
+  INCOMING
+  OUTGOING
+  MISSED
+}
+
+enum CallOutcome {
+  CONNECTED
+  NO_ANSWER
+  BUSY
+  INTERESTED
+  NOT_INTERESTED
+  FOLLOW_UP_REQUIRED
+}
+
+enum DocumentCategory {
+  CONTRACT
+  PROPOSAL
+  INVOICE
+  CUSTOMER
+  INTERNAL
+}
+
+enum CampaignType {
+  EMAIL
+  SOCIAL
+  SEARCH
+  EVENT
+  REFERRAL
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model Company {
+  id            String   @id @default(cuid())
+  name          String
+  logo          String?
+  industry      String?
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  taxId         String?
+  timezone      String   @default("Asia/Kolkata")
+  currency      String   @default("INR")
+  workingHours  String   @default("09:00-18:00")
+  onboarded     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users         User[]
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  passwordHash      String
+  avatar            String?
+  phone             String?
+  role              Role      @default(EMPLOYEE)
+  department        String?
+  designation       String?
+  status            String    @default("ACTIVE")
+  joiningDate       DateTime  @default(now())
+  managerId         String?
+  manager           User?     @relation("ManagerEmployees", fields: [managerId], references: [id])
+  reports           User[]    @relation("ManagerEmployees")
+  companyId         String?
+  company           Company?  @relation(fields: [companyId], references: [id])
+  language          String    @default("en")
+  timezone          String    @default("Asia/Kolkata")
+  theme             String    @default("system")
+  lastLoginAt       DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  activeSessionId   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  assignedCustomers Customer[]      @relation("AssignedCustomers")
+  assignedLeads     Lead[]          @relation("AssignedLeads")
+  assignedDeals     Deal[]          @relation("AssignedDeals")
+  tasks             Task[]          @relation("AssignedTasks")
+  followUps         FollowUp[]      @relation("AssignedFollowUps")
+  calls             Call[]          @relation("EmployeeCalls")
+  emails            Email[]         @relation("EmployeeEmails")
+  notifications     Notification[]
+  activities        Activity[]
+  documents         Document[]
+  events            CalendarEvent[]
+  customerProfile   Customer?       @relation("PortalUser")
+}
+
+model Customer {
+  id              String         @id @default(cuid())
+  name            String
+  company         String?
+  email           String
+  phone           String
+  status          CustomerStatus @default(ACTIVE)
+  address         String?
+  industry        String?
+  assignedToId    String?
+  assignedTo      User?          @relation("AssignedCustomers", fields: [assignedToId], references: [id])
+  portalUserId    String?        @unique
+  portalUser      User?          @relation("PortalUser", fields: [portalUserId], references: [id])
+  lastContact     DateTime?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  leads           Lead[]
+  deals           Deal[]
+  tasks           Task[]
+  followUps       FollowUp[]
+  calls           Call[]
+  emails          Email[]
+  invoices        Invoice[]
+  payments        Payment[]
+  documents       Document[]
+  activities      Activity[]
+  events          CalendarEvent[]
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  name            String
+  company         String?
+  email           String
+  phone           String
+  source          String
+  industry        String?
+  value           Float      @default(0)
+  status          LeadStatus @default(NEW)
+  priority        Priority   @default(MEDIUM)
+  assignedToId    String?
+  assignedTo      User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  customerId      String?
+  customer        Customer?  @relation(fields: [customerId], references: [id])
+  campaignId      String?
+  campaign        Campaign?  @relation(fields: [campaignId], references: [id])
+  notes           String?
+  nextFollowUp    DateTime?
+  convertedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  deals           Deal[]
+  followUps       FollowUp[]
+  calls           Call[]
+  emails          Email[]
+  activities      Activity[]
+}
+
+model Deal {
+  id              String    @id @default(cuid())
+  name            String
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  leadId          String?
+  lead            Lead?     @relation(fields: [leadId], references: [id])
+  value           Float     @default(0)
+  probability     Int       @default(50)
+  stage           DealStage @default(NEW)
+  expectedClose   DateTime?
+  assignedToId    String?
+  assignedTo      User?     @relation("AssignedDeals", fields: [assignedToId], references: [id])
+  notes           String?
+  lostReason      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  invoices        Invoice[]
+  activities      Activity[]
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  title        String
+  description  String?
+  assignedToId String?
+  assignedTo   User?      @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  customerId   String?
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  priority     Priority   @default(MEDIUM)
+  dueDate      DateTime?
+  status       TaskStatus @default(TODO)
+  reminder     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model FollowUp {
+  id           String         @id @default(cuid())
+  type         FollowUpType
+  customerId   String?
+  customer     Customer?      @relation(fields: [customerId], references: [id])
+  leadId       String?
+  lead         Lead?          @relation(fields: [leadId], references: [id])
+  assignedToId String?
+  assignedTo   User?          @relation("AssignedFollowUps", fields: [assignedToId], references: [id])
+  scheduledAt  DateTime
+  notes        String?
+  reminder     Boolean        @default(true)
+  status       FollowUpStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("meeting")
+  start       DateTime
+  end         DateTime
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model Call {
+  id           String        @id @default(cuid())
+  customerId   String?
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  leadId       String?
+  lead         Lead?         @relation(fields: [leadId], references: [id])
+  employeeId   String?
+  employee     User?         @relation("EmployeeCalls", fields: [employeeId], references: [id])
+  phone        String
+  direction    CallDirection
+  duration     Int           @default(0)
+  outcome      CallOutcome   @default(CONNECTED)
+  notes        String?
+  nextFollowUp DateTime?
+  createdAt    DateTime      @default(now())
+}
+
+model Email {
+  id         String   @id @default(cuid())
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  leadId     String?
+  lead       Lead?     @relation(fields: [leadId], references: [id])
+  employeeId String?
+  employee   User?     @relation("EmployeeEmails", fields: [employeeId], references: [id])
+  subject    String
+  body       String
+  direction  String    @default("SENT")
+  templateId String?
+  status     String    @default("SENT")
+  createdAt  DateTime  @default(now())
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  number       String        @unique
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  dealId       String?
+  deal         Deal?         @relation(fields: [dealId], references: [id])
+  issueDate    DateTime      @default(now())
+  dueDate      DateTime
+  tax          Float         @default(0)
+  discount     Float         @default(0)
+  status       InvoiceStatus @default(DRAFT)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  items        InvoiceItem[]
+  payments     Payment[]
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  Int     @default(1)
+  price     Float   @default(0)
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  customerId String
+  customer  Customer @relation(fields: [customerId], references: [id])
+  amount    Float
+  method    String   @default("Bank Transfer")
+  status    String   @default("SUCCESS")
+  paidAt    DateTime @default(now())
+}
+
+model Document {
+  id         String           @id @default(cuid())
+  name       String
+  category   DocumentCategory @default(INTERNAL)
+  customerId String?
+  customer   Customer?        @relation(fields: [customerId], references: [id])
+  uploadedById String?
+  uploadedBy   User?          @relation(fields: [uploadedById], references: [id])
+  size       Int              @default(0)
+  fileType   String           @default("pdf")
+  createdAt  DateTime         @default(now())
+}
+
+model Campaign {
+  id             String         @id @default(cuid())
+  name           String
+  type           CampaignType
+  status         CampaignStatus @default(DRAFT)
+  startDate      DateTime
+  endDate        DateTime?
+  targetAudience String?
+  budget         Float          @default(0)
+  revenue        Float          @default(0)
+  createdAt      DateTime       @default(now())
+
+  leads          Lead[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  action      String
+  module      String
+  description String
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  leadId      String?
+  lead        Lead?     @relation(fields: [leadId], references: [id])
+  dealId      String?
+  deal        Deal?     @relation(fields: [dealId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model RolePermission {
+  id        String   @id @default(cuid())
+  role      Role
+  module    String
+  canView   Boolean  @default(false)
+  canCreate Boolean  @default(false)
+  canEdit   Boolean  @default(false)
+  canDelete Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, module])
+}
