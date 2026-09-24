@@ -1,0 +1,82 @@
+{
+  "id": "measure-pixel",
+  "name": "Measure Pixel",
+  "timezone": "Asia/Kolkata",
+  "quietHours": { "start": "21:00", "end": "09:00" },
+  "whatsapp": {
+    "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID",
+    "accessTokenEnv": "WA_TOKEN_MEASURE_PIXEL"
+  },
+  "apiKeyEnv": "API_KEY_MEASURE_PIXEL",
+  "agent": {
+    "name": "Aria",
+    "role": "growth consultant",
+    "tone": "sharp, warm, founder-to-founder. Short sentences. Zero hype.",
+    "language": "Reply in the language the lead writes in. Hinglish is fine if they use it."
+  },
+  "business": {
+    "description": "Measure Pixel is a performance marketing agency. We run Meta and Google ads, landing pages and WhatsApp funnels for coaches, clinics, D2C brands and service businesses, and we are paid to produce booked calls and sales, not impressions.",
+    "offers": [
+      { "name": "Growth Sprint", "price": "from INR 60,000 / month + ad spend", "description": "Done-for-you ads, creatives, landing page, tracking and weekly optimisation." },
+      { "name": "Free Funnel Audit", "description": "30-minute call reviewing their ads, landing page and follow-up, with 3 fixes they can apply." }
+    ],
+    "faqs": [
+      { "q": "Minimum ad budget?", "a": "We recommend at least INR 50,000 per month in ad spend so the data is meaningful." },
+      { "q": "Contract length?", "a": "Month-to-month after an initial 3-month sprint." }
+    ],
+    "objections": [
+      { "objection": "Tried agencies before, didn't work", "response": "Acknowledge it. Ask what they measured. Explain we report on booked calls and revenue, weekly." },
+      { "objection": "Too expensive", "response": "Ask what one new customer is worth to them, then frame the fee against it. Offer the free audit." }
+    ],
+    "proof": [
+      "A fertility clinic went from 40 to 160 booked consultations a month in 90 days.",
+      "A fitness coach cut cost per lead by 58% after moving to WhatsApp-first funnels."
+    ],
+    "bookingLink": "https://cal.com/measurepixel/audit"
+  },
+  "qualification": {
+    "idealCustomer": "Owner or marketing head of an established business with a proven offer, monthly revenue above INR 5 lakh, ready to spend at least INR 50,000/month on ads within the next 60 days.",
+    "criteria": [
+      { "key": "business", "question": "What does the business sell and to whom?" },
+      { "key": "role", "question": "Are they the decision maker?", "description": "Owner, co-founder, or marketing head with budget authority." },
+      { "key": "goal", "question": "What result do they want from marketing in the next 90 days?" },
+      { "key": "current_marketing", "question": "What are they doing today for leads and what is not working?" },
+      { "key": "monthly_revenue", "question": "Roughly what is monthly revenue?", "disqualifyIf": "Pre-revenue or under INR 1 lakh per month" },
+      { "key": "ad_budget", "question": "What monthly ad budget can they commit?", "disqualifyIf": "Under INR 25,000 per month with no plan to increase" },
+      { "key": "timeline", "question": "When do they want to start?", "required": false }
+    ],
+    "qualifyThreshold": 70,
+    "disqualifyRules": [
+      "They are looking for a job, internship, or to sell us something.",
+      "MLM, gambling, crypto schemes, or anything illegal."
+    ],
+    "onDisqualified": "close"
+  },
+  "handoff": {
+    "reps": [{ "name": "Aravind", "phone": "910000000000" }],
+    "template": { "name": "lead_handoff", "language": "en" },
+    "pauseBotAfterHandoff": true
+  },
+  "templates": {
+    "opener": { "name": "lead_opener", "language": "en" },
+    "reengage": { "name": "lead_followup", "language": "en" }
+  },
+  "nurture": { "enabled": true, "nudgeAfterMinutes": 120 },
+  "accountability": {
+    "programs": [
+      {
+        "id": "marketing-mentorship",
+        "name": "Digital Marketing Mentorship",
+        "description": "8-week mentorship: weekly live session plus assignments applied to the student's own business.",
+        "goals": ["Launch first profitable campaign", "Build a landing page", "Set up conversion tracking"],
+        "checkins": [
+          { "days": ["tue", "fri"], "time": "19:00", "prompt": "Ask about progress on this week's assignment from the live session and whether anything is blocking them." }
+        ],
+        "escalateAfterMisses": 2,
+        "coach": { "name": "Aravind", "phone": "910000000000" },
+        "weeklyReport": { "day": "mon", "time": "09:30" },
+        "durationDays": 56
+      }
+    ]
+  }
+}

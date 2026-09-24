@@ -1,0 +1,63 @@
+{
+  "id": "example-health-coach",
+  "name": "FitWithNeha",
+  "timezone": "Asia/Kolkata",
+  "quietHours": { "start": "21:30", "end": "07:00" },
+  "whatsapp": {
+    "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID_2",
+    "accessTokenEnv": "WA_TOKEN_FITWITHNEHA"
+  },
+  "apiKeyEnv": "API_KEY_FITWITHNEHA",
+  "agent": {
+    "name": "Neha's assistant",
+    "role": "program coordinator on Coach Neha's team",
+    "tone": "encouraging, practical, never preachy. Like a supportive friend who keeps you honest."
+  },
+  "business": {
+    "description": "FitWithNeha runs a 12-week online fat-loss and strength program for working women aged 28-45: home workouts, simple Indian meal plans, weekly group calls and daily accountability.",
+    "offers": [{ "name": "12-Week Transformation", "price": "INR 18,000", "description": "Workouts, meal plan, weekly group coaching call, daily WhatsApp accountability." }],
+    "faqs": [
+      { "q": "Do I need a gym?", "a": "No. Everything works at home with a pair of dumbbells or resistance bands." },
+      { "q": "Is it vegetarian friendly?", "a": "Yes, meal plans are built for vegetarian and non-vegetarian Indian diets." }
+    ],
+    "proof": ["Over 900 women coached; average 6.2 kg lost in 12 weeks."],
+    "knowledge": "Medical conditions (pregnancy, thyroid, PCOS, injuries) are welcome but must be flagged to the coach before starting."
+  },
+  "qualification": {
+    "idealCustomer": "Working woman 28-45 who wants to lose fat and get stronger, can commit 30 minutes a day, and can invest INR 18,000.",
+    "criteria": [
+      { "key": "goal", "question": "What is her main goal and why now?" },
+      { "key": "obstacles", "question": "What has stopped her before?" },
+      { "key": "time_commitment", "question": "Can she commit about 30 minutes a day, 5 days a week?" },
+      { "key": "health_flags", "question": "Any medical conditions or injuries the coach should know about?", "required": false },
+      { "key": "investment_ready", "question": "Is she comfortable investing INR 18,000 in the program?", "disqualifyIf": "Clearly cannot afford it now" }
+    ],
+    "qualifyThreshold": 65,
+    "onDisqualified": "nurture"
+  },
+  "handoff": {
+    "reps": [{ "name": "Neha", "phone": "910000000001" }],
+    "template": { "name": "lead_handoff", "language": "en" }
+  },
+  "templates": {
+    "opener": { "name": "lead_opener", "language": "en" },
+    "reengage": { "name": "lead_followup", "language": "en" }
+  },
+  "accountability": {
+    "programs": [
+      {
+        "id": "12-week",
+        "name": "12-Week Transformation",
+        "goals": ["Workout 5x/week", "Protein with every meal", "8,000 steps daily", "7 hours sleep"],
+        "checkins": [
+          { "days": ["mon", "tue", "wed", "thu", "fri"], "time": "20:00", "prompt": "Did they finish today's workout and hit protein and steps? Get a clear yes/partly/no." },
+          { "days": ["sun"], "time": "10:00", "prompt": "Weekly reflection: weight/measurement update, biggest win, biggest struggle, one focus for next week." }
+        ],
+        "escalateAfterMisses": 3,
+        "coach": { "name": "Neha", "phone": "910000000001" },
+        "weeklyReport": { "day": "mon", "time": "08:00" },
+        "durationDays": 84
+      }
+    ]
+  }
+}
