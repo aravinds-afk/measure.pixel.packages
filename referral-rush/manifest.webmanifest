@@ -1,0 +1,16 @@
+{
+  "name": "BNI Royals – Referral Rush",
+  "short_name": "Referral Rush",
+  "description": "BNI Royals chapter game: give at the weekly meeting to grow your multiplier.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#CF2030",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#CF2030"/>
+  <path d="M136 214 L186 280 L256 176 L326 280 L376 214 L356 330 L156 330 Z" fill="#FFFFFF"/>
+  <rect x="156" y="344" width="200" height="30" rx="8" fill="#FFFFFF"/>
+  <circle cx="136" cy="200" r="18" fill="#FFFFFF"/><circle cx="256" cy="160" r="20" fill="#FFFFFF"/><circle cx="376" cy="200" r="18" fill="#FFFFFF"/>
+  <text x="256" y="452" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="64" fill="#FFFFFF" letter-spacing="6">RUSH</text>
+</svg>

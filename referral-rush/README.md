@@ -1,6 +1,24 @@
-# Referral Rush
+# BNI Royals – Referral Rush
 
-A 3-lane endless runner for chapter meetings. It's a single file (`index.html`) with no build step and no dependencies apart from Google Fonts, and it works on phones, laptops and projectors.
+A 3-lane endless runner for the BNI Royals chapter. It's one responsive page (`index.html`) with no build step, and the same file serves phones, laptops and projectors.
+
+## Setup
+
+1. Save the chapter's official logo as `assets/bni-logo.png`. Until you do, a red "BNI" text badge stands in (see `assets/README.md`).
+2. Host this folder as static files and share the URL. On a phone, "Add to Home Screen" installs it full-screen with its own icon (`manifest.webmanifest`, `icons/`).
+
+## Start screen
+
+- **Choose your seat**, each with a perk:
+  - President: meetings grow your multiplier 25% more.
+  - Vice President: junk slips cost half the trust.
+  - Secretary / Treasurer: starts every run with a Substitute.
+  - Member: the rival starts further back, and 1-to-1s give +35 trust.
+- **Dress code:** Suit & tie, or Blazer & skirt. Every character wears business formals and carries a briefcase; the President also wears a chain of office. The seat and dress code are remembered on each device.
+
+## Mobile
+
+Swipe controls fire mid-gesture, and the page doesn't scroll or zoom during a run. The HUD stays clear of notches and home bars (safe-area insets). The phone vibrates on crashes and gates, the screen stays awake during a run, and Android phones go full-screen when a run starts.
 
 Play it by opening `index.html` in a browser, or host the folder anywhere static (GitHub Pages, Netlify, Vercel) and put the URL behind a QR code.
 
@@ -31,10 +49,8 @@ Green ≥ 70 · Yellow ≥ 45 · Red below 45.
 
 ## v1 scope (built)
 
-3 lanes, a chaser, gold/grey slips, 4 obstacles (traffic jam, "Busy this week" wall, cold-pitch spam cloud, missed-meeting pit), 3 power-ups (Power Team magnet, Givers Gain 2x, Substitute shield), meeting gates with the giving multiplier, a Trust meter and the traffic-light end screen. The setting is a Chennai street at dusk: autos, a gopuram skyline, filter-kaapi stalls, black-and-yellow kerbs and a marigold garland on the meeting gate.
+3 lanes, a chaser, gold/grey slips, 4 obstacles (traffic jam, "Busy this week" wall, cold-pitch spam cloud, missed-meeting pit), 3 power-ups (Power Team magnet, Givers Gain 2x, Substitute shield), meeting gates with the giving multiplier, a Trust meter and the traffic-light end screen. The setting is a Chennai street on a breakfast-meeting morning, branded red and white: red-and-white kerbs and buildings, BNI Royals banners on the lamp posts and billboards, and a red meeting gate hung with a marigold garland. It keeps Chennai details such as yellow autos, a gopuram skyline and filter-kaapi stalls.
 
 ## v2 backlog
 
-Profession characters with passives, missions, a 60-second pitch QTE at gates, a shared chapter leaderboard, Power Team combo chains, Mentor jetpack.
-
-The game is unbranded on purpose: it shows no organisation name or logo.
+Missions, a 60-second pitch QTE at gates, a shared chapter leaderboard, Power Team combo chains, Mentor jetpack.
