@@ -67,16 +67,14 @@
   }
   .panel > .inner { padding: 0 22px; }
   .brandbar {
-    display: flex; align-items: center; gap: 10px; padding: 12px 64px 12px 22px; margin-bottom: 16px;
-    background: var(--red); color: #fff;
+    display: flex; align-items: center; gap: 12px; padding: 14px 22px 12px; margin-bottom: 16px;
+    background: var(--paper); border-bottom: 4px solid var(--red);
   }
-  .brandbar .chapter { font-weight: 800; font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; }
-  .brandbar .tag { margin-left: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.9; }
-  .brand-logo { display: inline-flex; align-items: center; height: 28px; }
-  .brand-logo img { height: 100%; width: auto; display: block; background: #fff; border-radius: 6px; padding: 2px 6px; box-sizing: border-box; }
-  .logo-fallback {
-    display: inline-grid; place-items: center; height: 28px; padding: 3px 9px 0; border-radius: 6px; box-sizing: border-box;
-    background: #fff; color: var(--red); font-weight: 800; font-size: 19px; line-height: 1;
+  .brandbar .lockup { height: 64px; width: auto; display: block; }
+  .brandbar .chapter { font-weight: 800; font-size: 18px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); }
+  .brandbar .tag {
+    margin-left: auto; padding: 5px 12px 3px; border-radius: 999px; background: var(--red); color: #fff;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; text-align: center;
   }
   h1 { margin: 0; font-weight: 800; font-size: clamp(40px, 11vw, 64px); line-height: 0.92; letter-spacing: -0.01em; text-wrap: balance; }
   h1 span { color: var(--red); }
@@ -157,8 +155,8 @@
     .role-card canvas { width: 40px; height: 52px; }
     .legend { grid-template-columns: 1fr; }
     .panel > .inner { padding: 0 16px; }
-    .brandbar { padding: 10px 16px; margin-bottom: 12px; }
-    .brandbar .tag { display: none; }
+    .brandbar { padding: 10px 16px 8px; margin-bottom: 12px; }
+    .brandbar .lockup { height: 52px; }
     .card li { grid-template-columns: minmax(0, 1fr) auto 70px; gap: 8px; }
     .num { font-size: 17px; }
     .actions .btn { flex: 1 1 auto; }
@@ -185,7 +183,7 @@
 
   <section id="startScreen" class="screen">
     <div class="panel">
-      <div class="brandbar"><span class="brand-logo"></span><span class="chapter">BNI Royals</span><span class="tag">Chapter game</span></div>
+      <div class="brandbar"><img class="lockup" src="assets/bni-logo.png" alt="BNI Royals" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="chapter" hidden>BNI Royals</span><span class="tag">Chapter game</span></div>
       <div class="inner">
         <h1>Referral <span>Rush</span></h1>
         <p class="lede">A rival in your category wants your seat. Stay ahead, pick up qualified slips, and give them at every weekly meeting.</p>
@@ -247,7 +245,7 @@
 
   <section id="pauseScreen" class="screen" hidden>
     <div class="panel">
-      <div class="brandbar"><span class="brand-logo"></span><span class="chapter">BNI Royals</span><span class="tag">Paused</span></div>
+      <div class="brandbar"><img class="lockup" src="assets/bni-logo.png" alt="BNI Royals" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="chapter" hidden>BNI Royals</span><span class="tag">Paused</span></div>
       <div class="inner">
         <h1>Take a <span>breath</span></h1>
         <div class="actions">
@@ -261,7 +259,7 @@
 
   <section id="endScreen" class="screen" hidden>
     <div class="panel">
-      <div class="brandbar"><span class="brand-logo"></span><span class="chapter">BNI Royals</span><span class="tag" id="endRole">Member</span></div>
+      <div class="brandbar"><img class="lockup" src="assets/bni-logo.png" alt="BNI Royals" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="chapter" hidden>BNI Royals</span><span class="tag" id="endRole">Member</span></div>
       <div class="inner">
         <p class="section-label" id="endReason" style="margin-top:0">Caught</p>
         <div class="verdict">
@@ -334,15 +332,11 @@ let ROLE = ROLES[store.get('rr-role')] ? store.get('rr-role') : 'member';
 let STYLE = STYLES[store.get('rr-style')] ? store.get('rr-style') : 'suit';
 const lookFor = (role, style) => Object.assign({}, STYLES[style], ROLES[role].look);
 
-/* ---------- logo: drop the chapter's official file at assets/bni-logo.png ---------- */
+/* ---------- logo: the BNI mark (assets/bni-mark.png) for canvas; the full lockup is used on the screens ---------- */
 const logoImg = new Image();
 let logoOK = false;
-document.querySelectorAll('.brand-logo').forEach(el => { el.innerHTML = '<span class="logo-fallback">BNI</span>'; });
-logoImg.onload = () => {
-  logoOK = true;
-  document.querySelectorAll('.brand-logo').forEach(el => { el.innerHTML = ''; const i = logoImg.cloneNode(); i.alt = 'BNI'; el.appendChild(i); });
-};
-logoImg.src = 'assets/bni-logo.png';
+logoImg.onload = () => { logoOK = true; };
+logoImg.src = 'assets/bni-mark.png';
 /* draws the logo with its top-left at (x,y) on a light background; returns drawn width */
 function drawLogo(c, x, y, h) {
   if (logoOK) { const w = h * logoImg.width / logoImg.height; c.drawImage(logoImg, x, y, w, h); return w; }

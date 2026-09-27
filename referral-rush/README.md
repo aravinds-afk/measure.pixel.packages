@@ -4,7 +4,7 @@ A 3-lane endless runner for the BNI Royals chapter. It's one responsive page (`i
 
 ## Setup
 
-1. Save the chapter's official logo as `assets/bni-logo.png`. Until you do, a red "BNI" text badge stands in (see `assets/README.md`).
+1. The BNI Royals logo is already in `assets/` (see `assets/README.md` to replace it).
 2. Host this folder as static files and share the URL. On a phone, "Add to Home Screen" installs it full-screen with its own icon (`manifest.webmanifest`, `icons/`).
 
 ## Start screen

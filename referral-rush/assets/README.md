@@ -1,5 +1,6 @@
-# Logo slot
+# Logos
 
-Save the chapter's official logo here as `bni-logo.png` (a transparent or white background works best; any aspect ratio).
+- `bni-logo.png`: the full BNI Royals lockup (BNI + ROYALS), trimmed, with a transparent background. It's used in the header of the start, pause and end screens.
+- `bni-mark.png`: the BNI mark only. It's used wherever the logo is drawn small in the game: the HUD, the meeting gate, billboards and lamp-post banners. It also appears in the app icon (`icons/`).
 
-The game picks it up automatically and uses it on the start, pause and end screens, the HUD, the weekly-meeting gate, the street billboards and the lamp-post banners. Until the file exists, a red "BNI" text badge stands in.
+Both were cut from the chapter's official logo for chapter-internal use. To swap in a higher-resolution file, replace these two PNGs; any aspect ratio works.
