@@ -1,0 +1,13 @@
+# Minimal Supabase CLI config for XpressU. Run `supabase init` if you need the full file.
+project_id = "xpressu"
+
+[auth]
+enabled = true
+# Anonymous sign-ins let every install get a JWT (for quota) without an account.
+enable_anonymous_sign_ins = true
+
+[functions.generate-replies]
+verify_jwt = true
+
+[functions.revenuecat-webhook]
+verify_jwt = false
