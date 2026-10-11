@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real Estate Lead Generation — BHAP Client Plan</title>
+<style>
+  :root{
+    --ink:#1a1f1c; --muted:#5b625e; --line:#e4e6e3; --bg:#f4f4f2; --card:#fff;
+    --dark:#17241d; --amber:#c98a1b; --amber-soft:#f6efe1; --green:#1f9d6b; --green-soft:#e9f5ef;
+    --blue:#2f6fd6; --orange:#e8743b; --tint:#f7f8f7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:A4;margin:0}
+  html,body{background:var(--bg)}
+  body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink);font-size:9.2px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:210mm;min-height:297mm;padding:9mm 7mm;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto}
+  .card{background:var(--card);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.05);margin-bottom:10px}
+  .hero{background:var(--dark);color:#fff;border-radius:10px;padding:22px 20px 20px;margin-bottom:10px}
+  .tag{display:inline-block;background:var(--amber);color:#fff;font-size:7px;letter-spacing:.18em;font-weight:700;padding:4px 9px;border-radius:3px;text-transform:uppercase}
+  .hero h1{font-size:23px;margin:12px 0 8px;letter-spacing:-.01em}
+  .hero p{color:#cfd6d1;font-size:10px;max-width:470px}
+  .hero p b{color:#fff}
+  h2{font-size:14px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  h2 .n{width:20px;height:20px;border-radius:5px;background:var(--amber);color:#fff;font-size:10px;display:inline-flex;align-items:center;justify-content:center}
+  .lead{color:var(--muted);margin-bottom:12px}
+  h3.k{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);margin:14px 0 8px}
+  .grid{display:grid;gap:8px}
+  .g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)}
+  .step{background:var(--tint);border-radius:7px;border-top:2px solid var(--amber);padding:11px}
+  .step svg{width:15px;height:15px;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .eyebrow{font-size:6.6px;letter-spacing:.14em;font-weight:700;color:var(--amber);text-transform:uppercase;margin:6px 0 3px}
+  .step h4{font-size:10px;margin-bottom:3px}
+  .step p{color:var(--muted);font-size:8.3px}
+  .callout{background:var(--amber-soft);border-left:3px solid var(--amber);border-radius:5px;padding:9px 11px;margin-top:12px;font-size:8.4px}
+  .callout b.a{color:var(--amber)}
+  .callout.g{background:var(--green-soft);border-left-color:var(--green)}
+  .callout.g b.a{color:var(--green)}
+  .route{background:var(--tint);border-radius:7px;padding:11px;border-top:3px solid}
+  .route h4{font-size:10.5px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .route svg{width:15px;height:15px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .route>p{color:var(--muted);font-size:8.3px;min-height:44px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:6px}
+  .kv dt{font-size:6.4px;letter-spacing:.12em;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:6px}
+  .kv dd{font-weight:700;font-size:8.4px}
+  table{width:100%;border-collapse:collapse;font-size:8.4px}
+  th{font-size:6.6px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:6px 6px;border-bottom:1px solid var(--line)}
+  td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+  td.r,th.r{text-align:right} td.c,th.c{text-align:center}
+  tr.tot td{background:var(--amber-soft);font-weight:700}
+  .bar{height:9px;background:#eef0ee;border-radius:3px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .legend{display:flex;gap:12px;align-items:center;font-size:7.6px;color:var(--muted);margin-bottom:8px}
+  .legend span{display:inline-flex;align-items:center;gap:4px}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+  .vid{background:var(--tint);border-radius:7px;padding:11px;border-left:3px solid var(--amber)}
+  .vid h4{font-size:10px;margin-bottom:3px}
+  .vid p{color:var(--muted);font-size:8.2px;min-height:46px}
+  .vid .eyebrow{color:var(--green);margin-top:7px}
+  .stat{background:var(--tint);border-radius:7px;padding:10px;border-left:3px solid var(--amber)}
+  .stat .eyebrow{color:var(--muted);margin:0 0 4px}
+  .stat b{font-size:15px;display:block;letter-spacing:-.01em}
+  .stat small{color:var(--muted);font-size:7.4px}
+  .rec{background:var(--green);color:#fff;font-size:6.2px;letter-spacing:.1em;padding:2px 6px;border-radius:8px;margin-left:4px}
+  .hl{background:var(--green-soft)}
+  .fine{color:var(--muted);font-size:7.4px;margin-top:6px}
+  .exp{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;margin-bottom:8px}
+  .exp b{font-size:9px;display:block}
+  .exp small{color:var(--muted);font-size:7.4px}
+  .exp .bar{height:15px}
+  .exp .bar i{background:var(--blue);color:#fff;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
+  .exp .s{color:var(--muted);font-size:7.6px;text-align:right}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .wk{display:grid;grid-template-columns:62px 1fr;gap:9px;margin-bottom:10px;font-size:8.4px}
+  .wk span{background:var(--dark);color:#fff;font-weight:700;font-size:7.4px;border-radius:4px;padding:5px 6px;text-align:center;height:max-content}
+  ul.dots{list-style:none}
+  ul.dots li{position:relative;padding-left:11px;margin-bottom:7px;font-size:8.4px}
+  ul.dots li:before{content:"";position:absolute;left:0;top:5px;width:4px;height:4px;border-radius:50%;background:var(--ink)}
+  .foot{color:var(--muted);font-size:7.2px;border-top:1px solid var(--line);padding-top:8px;margin-top:12px}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<section class="page">
+  <div class="hero">
+    <span class="tag">Lead Generation Plan · BHAP</span>
+    <h1>Getting BHAP More Site Visits and Bookings</h1>
+    <p>A simple, video-led plan across Instagram, Facebook, Google and WhatsApp — designed to bring your projects <b>serious home-buyer enquiries and site visits</b>, not just phone numbers.</p>
+  </div>
+
+  <div class="card">
+    <h2>The idea, in one line</h2>
+    <p class="lead">Nobody books an ₹80 lakh home off a brochure. So we show your projects the way a buyer actually experiences them — the location, the sample flat, the construction progress, the families already living there — to people in your city who are actively looking to buy. Then we make it very easy for them to book a site visit.</p>
+
+    <div class="grid g4">
+      <div class="step">
+        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>
+        <div class="eyebrow">Step 1</div><h4>They see you</h4>
+        <p>Project videos run on Instagram, Facebook and YouTube — shown only to people in your city, in your price band, who are likely to buy in the next few months.</p>
+      </div>
+      <div class="step">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6C19 16.5 12 21 12 21z"/></svg>
+        <div class="eyebrow">Step 2</div><h4>They trust you</h4>
+        <p>Price and payment-plan breakdowns, sample-flat tours, construction updates and RERA details answer their doubts before they ever speak to you.</p>
+      </div>
+      <div class="step">
+        <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+        <div class="eyebrow">Step 3</div><h4>They enquire</h4>
+        <p>Three easy ways to reach you — WhatsApp, a one-tap form, or a project page. All three land in one place, with the project and source marked.</p>
+      </div>
+      <div class="step">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        <div class="eyebrow">Step 4</div><h4>They visit, you close</h4>
+        <p>Your sales team calls within 5 minutes, books a site visit, and we track which ads actually produced bookings — not just enquiries.</p>
+      </div>
+    </div>
+
+    <div class="callout"><b class="a">The one thing we ask you to judge us on:</b> not "how many leads", but <b class="a">how many site visits you got, and what each booking cost you.</b> Cheap leads are easy to buy; buyers who walk into your sales office are not. Everything in this plan is built around that difference.</div>
+  </div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page">
+  <div class="card">
+    <h2><span class="n">1</span>The three ways enquiries reach you</h2>
+    <p class="lead">Different buyers like to enquire in different ways. We run all three at once, because each one brings a different kind of buyer — and together they cost less than depending on any single one, or on brokers alone.</p>
+
+    <div class="grid g3">
+      <div class="route" style="border-color:var(--green)">
+        <h4><svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>1. WhatsApp</h4>
+        <p>They tap the ad and a WhatsApp chat opens with a ready message — "Send me the 2 &amp; 3 BHK price list". The brochure and floor plans go out automatically.</p>
+        <dl class="kv">
+          <dt>Best for</dt><dd>Buyers who want the price list right now</dd>
+          <dt>Enquiry quality</dt><dd>High — they chose to start a conversation</dd>
+          <dt>Cost per enquiry</dt><dd>Medium</dd>
+          <dt>You need</dt><dd>Someone replying within minutes, 7 days a week</dd>
+        </dl>
+      </div>
+      <div class="route" style="border-color:var(--blue)">
+        <h4><svg viewBox="0 0 24 24" style="stroke:var(--blue)"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>2. Instant Form</h4>
+        <p>A short form opens inside Instagram or Facebook — name and number already filled in. Fastest way to collect buyer details at scale.</p>
+        <dl class="kv">
+          <dt>Best for</dt><dd>Volume — the widest reach of the three</dd>
+          <dt>Enquiry quality</dt><dd>Mixed — so we add budget, BHK and "when do you plan to buy?" questions to filter</dd>
+          <dt>Cost per enquiry</dt><dd>Lowest</dd>
+          <dt>You need</dt><dd>Discipline to call every one, fast</dd>
+        </dl>
+      </div>
+      <div class="route" style="border-color:var(--orange)">
+        <h4><svg viewBox="0 0 24 24" style="stroke:var(--orange)"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>3. Project Page</h4>
+        <p>A dedicated page for each project — location map, floor plans, price range, amenities, RERA number, then a "book a site visit" form.</p>
+        <dl class="kv">
+          <dt>Best for</dt><dd>Higher-budget, research-minded buyers and NRIs</dd>
+          <dt>Enquiry quality</dt><dd>Highest — fewest, but most serious</dd>
+          <dt>Cost per enquiry</dt><dd>Highest</dd>
+          <dt>You need</dt><dd>The page built once per project; it then works until sold out</dd>
+        </dl>
+      </div>
+    </div>
+
+    <h3 class="k">Expected share of enquiries — and what each is worth</h3>
+    <div class="legend"><span><i style="background:var(--green)"></i>WhatsApp</span><span><i style="background:var(--blue)"></i>Instant Form</span><span><i style="background:var(--orange)"></i>Project Page</span><span>— based on a ₹1.5 lakh monthly ad budget</span></div>
+    <table>
+      <tr><th style="width:18%">Route</th><th style="width:34%">Share of total enquiries</th><th class="r">Enquiries / month</th><th class="r">Qualified ones</th><th class="r">Cost per qualified enquiry</th></tr>
+      <tr><td><b>Instant Form</b></td><td><div class="bar"><i style="width:57%;background:var(--blue)"></i></div></td><td class="r">200–260</td><td class="r">45–65</td><td class="r">₹1,350</td></tr>
+      <tr><td><b>WhatsApp</b></td><td><div class="bar"><i style="width:27%;background:var(--green)"></i></div></td><td class="r">90–120</td><td class="r">30–45</td><td class="r">₹1,100</td></tr>
+      <tr><td><b>Project Page</b></td><td><div class="bar"><i style="width:16%;background:var(--orange)"></i></div></td><td class="r">50–70</td><td class="r">18–25</td><td class="r">₹1,400</td></tr>
+      <tr class="tot"><td>Total</td><td></td><td class="r">340–450</td><td class="r">93–135</td><td class="r">₹1,300 avg</td></tr>
+    </table>
+    <p class="fine">"Qualified" = budget matches the project, looking at the right configuration, and planning to buy within 6 months.</p>
+
+    <div class="callout g"><b class="a">All three land in one place.</b> Whichever way a buyer enquires, it arrives in a single list with the project and source marked, and an automatic WhatsApp message with the brochure, floor plans and a site-visit link goes out within 60 seconds. Nothing gets lost between platforms, and nobody on your sales team has to check three different inboxes.</div>
+  </div>
+</section>
+
+<!-- PAGE 3 -->
+<section class="page">
+  <div class="card">
+    <h2><span class="n">2</span>The videos we will make</h2>
+    <p class="lead">This is where the plan lives or dies. A 3D render of a tower looks the same as every other developer's render. A 40-second video of your site head walking through the actual sample flat, tape measure in hand, does not — and that is what makes a buyer visit your project instead of the one down the road.</p>
+
+    <div class="grid g3">
+      <div class="vid"><h4>Price &amp; payment-plan explainers</h4><p>"What ₹80 lakh actually gets you here." Carpet area, car parking, clubhouse, GST and registration — shown on screen, with the payment schedule.</p><div class="eyebrow">Our strongest performer</div></div>
+      <div class="vid"><h4>Sample flat tours</h4><p>Room-by-room walk-through of the show flat or a handed-over unit, with carpet area, BHK and price range on screen. The closest thing to a site visit from a phone.</p><div class="eyebrow">Proof of quality</div></div>
+      <div class="vid"><h4>Location &amp; connectivity</h4><p>Drone shot plus a real drive: "6 minutes to the metro, 10 to the IT park, 4 to the school." Location is the first question every buyer asks.</p><div class="eyebrow">Answers "where is it?"</div></div>
+      <div class="vid"><h4>Buyer guides</h4><p>"5 mistakes people make before booking a flat" · "Carpet vs super built-up, explained." You or your sales head, on site. Builds authority fast.</p><div class="eyebrow">Brings new audiences</div></div>
+      <div class="vid"><h4>Construction progress</h4><p>Monthly drone update and timelapse — slab by slab, floor by floor. Your answer when a buyer asks "will it be delivered on time?"</p><div class="eyebrow">Protects your credibility</div></div>
+      <div class="vid"><h4>Resident &amp; buyer reviews</h4><p>Families who bought from you, speaking inside their own homes, in their own language. Name and project on screen.</p><div class="eyebrow">Closes doubts</div></div>
+      <div class="vid"><h4>Offer videos</h4><p>"Free site visit with pickup and drop this weekend." Straight to the point, one clear action, with the launch price or limited-unit offer. This is the ad that collects the enquiry.</p><div class="eyebrow">Does the asking</div></div>
+      <div class="vid"><h4>Follow-up videos</h4><p>Shown only to people who watched but didn't enquire. Covers bank loan approvals, RERA registration, possession timeline and the booking process.</p><div class="eyebrow">Second chance</div></div>
+      <div class="vid"><h4>Site diary clips</h4><p>Raw phone videos from your site and sales office — today's slab, a family's site visit, the weekend crowd. Looks real, costs nothing, and platforms show them cheaply.</p><div class="eyebrow">Weekly, free</div></div>
+    </div>
+
+    <div class="callout">Every video follows the same rules: shot vertical for mobile · the first 3 seconds do the work · subtitles on screen, because most people watch without sound · spoken in the local language, not brochure English · the locality named on screen, because local always beats generic · and the <b>RERA registration number shown on every ad</b>, as the rules require.</div>
+  </div>
+</section>
+
+<!-- PAGE 4 -->
+<section class="page">
+  <div class="card">
+    <h2><span class="n">3</span>How many videos, and when we shoot</h2>
+    <p class="lead">You do not need hundreds of films. You need two good shoot days at the start, then one shoot day a month — plus phone clips your own site and sales team send us for free.</p>
+
+    <div class="grid g4">
+      <div class="stat"><div class="eyebrow">To start with</div><b>30 videos</b><small>from just 2 shoot days</small></div>
+      <div class="stat"><div class="eyebrow">Ad versions made from them</div><b>55–60</b><small>same footage, different openings</small></div>
+      <div class="stat"><div class="eyebrow">Every month after</div><b>8–10 new</b><small>1 shoot day, batched with the drone update</small></div>
+      <div class="stat"><div class="eyebrow">From your team, weekly</div><b>2–3 clips</b><small>shot on a phone, no cost</small></div>
+    </div>
+
+    <table style="margin-top:14px">
+      <tr><th>What we shoot</th><th class="c">Videos</th><th class="c">Where</th><th>Notes</th></tr>
+      <tr><td>Price &amp; payment-plan explainers</td><td class="c">3</td><td class="c">Sales office</td><td>You or your sales head on camera</td></tr>
+      <tr><td>Sample flat tours</td><td class="c">3</td><td class="c">Show flat / handed-over unit</td><td>Show flat must be fully dressed and lit on shoot day</td></tr>
+      <tr><td>Location &amp; connectivity</td><td class="c">3</td><td class="c">Drone + drive</td><td>Drone permission for the site — we handle the paperwork</td></tr>
+      <tr><td>Buyer guides</td><td class="c">4</td><td class="c">Site</td><td>Shot in one go, same day as the above</td></tr>
+      <tr><td>Construction progress</td><td class="c">2</td><td class="c">Live site</td><td>Drone and a fixed timelapse camera, refreshed monthly</td></tr>
+      <tr><td>Resident &amp; buyer reviews</td><td class="c">3</td><td class="c">Buyers' homes</td><td><b>Please line these up early</b> — slowest item to arrange</td></tr>
+      <tr><td>Offer videos</td><td class="c">3</td><td class="c">Edited</td><td>Cut from footage already shot</td></tr>
+      <tr><td>Follow-up videos</td><td class="c">3</td><td class="c">Sales office</td><td>You on camera, answering loan, RERA and possession questions</td></tr>
+      <tr><td>Site diary clips</td><td class="c">6</td><td class="c">Phone</td><td>Your site and sales team record these — we edit</td></tr>
+      <tr class="tot"><td>Starting library</td><td class="c">30</td><td class="c">2 shoot days</td><td>Ready before the first rupee is spent on ads</td></tr>
+    </table>
+
+    <div class="callout"><b class="a">Why we keep making new ones:</b> the same video stops working after about 3–4 weeks — the same people have seen it too often, and your cost per enquiry starts climbing. The monthly batch is what keeps your cost flat instead of rising month after month. It also keeps construction updates current, which buyers notice.</div>
+  </div>
+</section>
+
+<!-- PAGE 5 -->
+<section class="page">
+  <div class="card">
+    <h2><span class="n">4</span>What it costs</h2>
+    <p class="lead">Everything is listed — the money that goes to Google and Meta, the video production, the management, and the tools. No hidden line items, and no brokerage on bookings.</p>
+
+    <h3 class="k">One-time setup — first month only</h3>
+    <table>
+      <tr><th>Item</th><th>What you get</th><th class="r">Cost</th></tr>
+      <tr><td>Starting video library</td><td>2 shoot days incl. drone, 30 videos, 55–60 ad versions edited</td><td class="r">₹90,000</td></tr>
+      <tr><td>Project page</td><td>A dedicated enquiry page for one project — floor plans, pricing, location, RERA</td><td class="r">₹30,000</td></tr>
+      <tr><td>WhatsApp &amp; enquiry system</td><td>Auto-reply with brochure, one common enquiry list, call tracking, site-visit booking</td><td class="r">₹20,000</td></tr>
+      <tr class="tot"><td>One-time total</td><td></td><td class="r">₹1,40,000</td></tr>
+    </table>
+    <p class="fine">Each additional project page: ₹20,000.</p>
+
+    <h3 class="k">Monthly plans — pick one</h3>
+    <table>
+      <tr><th>Monthly item</th><th class="r">Starter</th><th class="r hl">Growth <span class="rec">RECOMMENDED</span></th><th class="r">Scale</th></tr>
+      <tr><td><b>Ad budget</b> — paid directly to Meta &amp; Google</td><td class="r">₹75,000</td><td class="r hl"><b>₹1,50,000</b></td><td class="r">₹3,00,000</td></tr>
+      <tr><td><b>Video production</b> — 1 shoot day + drone update + edits</td><td class="r">₹25,000</td><td class="r hl">₹35,000</td><td class="r">₹45,000</td></tr>
+      <tr><td><b>Campaign management</b> — running, testing, reporting</td><td class="r">₹25,000</td><td class="r hl">₹35,000</td><td class="r">₹50,000</td></tr>
+      <tr><td><b>Tools</b> — WhatsApp automation, enquiry system</td><td class="r">₹5,000</td><td class="r hl">₹8,000</td><td class="r">₹10,000</td></tr>
+      <tr class="tot"><td>Total per month</td><td class="r">₹1,30,000</td><td class="r">₹2,28,000</td><td class="r">₹4,05,000</td></tr>
+    </table>
+    <p class="fine">GST extra as applicable. Ad budget is billed by Meta and Google to your own account — you see every rupee spent. Minimum commitment: 3 months.</p>
+
+    <h3 class="k">Where the ad budget goes — Growth plan, ₹1,50,000</h3>
+    <table>
+      <tr><td style="width:22%"><b>Instagram &amp; Facebook</b></td><td><div class="bar"><i style="width:70%;background:var(--blue)"></i></div></td><td class="r" style="width:14%">₹1,05,000</td></tr>
+      <tr><td><b>Google Search</b> <span style="color:var(--muted)">"3 BHK in [locality]"</span></td><td><div class="bar"><i style="width:25%;background:var(--blue)"></i></div></td><td class="r">₹37,500</td></tr>
+      <tr><td><b>YouTube follow-up</b></td><td><div class="bar"><i style="width:5%;background:var(--blue)"></i></div></td><td class="r">₹7,500</td></tr>
+    </table>
+
+    <div class="callout"><b class="a">Roughly 70% of the budget</b> runs on ads we already know work, and <b class="a">30% stays set aside for testing</b> new videos, new localities and new angles. That is what keeps results improving instead of slowly getting worse. Google Search gets a bigger share here than in most categories, because home buyers search by locality and BHK before they ever see an ad.</div>
+  </div>
+</section>
+
+<!-- PAGE 6 -->
+<section class="page">
+  <div class="card">
+    <h2><span class="n">5</span>What you can expect</h2>
+    <p class="lead">Based on the Growth plan — ₹1.5 lakh of ads a month, for one project in one city. These are planning estimates from how this category typically performs, not a guarantee; we replace them with your real numbers from month two.</p>
+
+    <div class="exp"><div><b>Enquiries</b><small>All three routes together</small></div><div class="bar"><i style="width:100%;background:#7aa6ea">340–450</i></div><div class="s">per month</div></div>
+    <div class="exp"><div><b>Qualified enquiries</b><small>Budget matches, buying within 6 months</small></div><div class="bar"><i style="width:30%">93–135</i></div><div class="s">about 1 in 3</div></div>
+    <div class="exp"><div><b>Site visits</b><small>At the project or sales office</small></div><div class="bar"><i style="width:11%">30–45</i></div><div class="s">roughly 1 a day</div></div>
+    <div class="exp"><div><b>Bookings</b><small>Booking amount received</small></div><div class="bar"><i style="width:4%;padding-right:2px">2–4</i></div><div class="s">depends on your sales team</div></div>
+
+    <div class="grid g3" style="margin-top:10px">
+      <div class="stat"><div class="eyebrow">Cost per qualified enquiry</div><b>₹1,300</b><small>average across the three routes</small></div>
+      <div class="stat"><div class="eyebrow">Cost per site visit</div><b>₹4,000</b><small>ads only</small></div>
+      <div class="stat"><div class="eyebrow">Full cost per booking</div><b>₹76,000</b><small>everything included, at 3 bookings/month</small></div>
+    </div>
+
+    <div class="callout g"><b class="a">Put simply:</b> at a typical ₹80 lakh home, the entire monthly investment of ₹2.28 lakh is under 3% of a single booking — about what a channel partner charges in brokerage on that one unit. Every booking after that in the month is pure margin compared with the broker route. But please read month one as a learning month — home buyers take 45 to 120 days to decide, so month three is the first fair judgement of this channel.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">6</span>How we start — and what we need from you</h2>
+    <div class="two" style="margin-top:10px">
+      <div>
+        <h3 class="k" style="margin-top:0">The first 90 days</h3>
+        <div class="wk"><span>Weeks 1–2</span><div><b>Setup.</b> Project page built, WhatsApp automation with brochure connected, enquiry list created, shoot days locked in.</div></div>
+        <div class="wk"><span>Weeks 3–4</span><div><b>Shoot &amp; go live.</b> Two shoot days, 30 videos edited, ads switched on across all three enquiry routes.</div></div>
+        <div class="wk"><span>Weeks 5–8</span><div><b>Tune.</b> We stop what isn't working, put more behind what is, and start showing follow-up videos to people who watched but didn't enquire.</div></div>
+        <div class="wk"><span>Weeks 9–12</span><div><b>Grow.</b> Fresh videos and a drone update every month, and a full review: what each site visit cost, and which videos produced bookings.</div></div>
+      </div>
+      <div>
+        <h3 class="k" style="margin-top:0">What we need from your side</h3>
+        <ul class="dots">
+          <li><b>One person who answers, fast.</b> Every enquiry called within 5 minutes, weekends included — that is when buyers look. This matters more than anything we do on the ad side.</li>
+          <li><b>Access to the site and show flat</b> for the two shoot days, plus <b>3 past buyers</b> willing to speak on camera.</li>
+          <li><b>30–40 minutes of your time on camera</b> across the shoot days. Buyers trust the founder's face more than any actor.</li>
+          <li><b>Honest status updates on each enquiry</b> — called, visited, negotiating, booked or lost. This is how we teach the ads to find more of your actual buyers.</li>
+          <li><b>Price list, floor plans and RERA details</b> kept current, so every ad and auto-reply is accurate.</li>
+          <li><b>Patience for 3 months.</b> Long decision cycles mean early months always look worse than the truth.</li>
+        </ul>
+        <h3 class="k">What you'll get from us</h3>
+        <ul class="dots">
+          <li>A <b>weekly WhatsApp update</b> — enquiries, site visits, cost, what changed.</li>
+          <li>A <b>monthly review call</b> with the full picture, in plain language.</li>
+          <li>Every enquiry in <b>one shared list</b>, with project and source marked, that you own.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot">Prepared 11 October 2026. Figures are planning estimates for a single-city residential project at a ₹50 lakh–₹2 crore unit price, and are replaced with live account data from month two onwards.</p>
+  </div>
+</section>
+
+</body>
+</html>
