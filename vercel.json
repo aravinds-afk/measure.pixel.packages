@@ -1,13 +1,12 @@
 {
-  "framework": null,
-  "buildCommand": "",
-  "installCommand": "",
-  "outputDirectory": ".",
   "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/sscontruction", "destination": "/ssconstructions/index.html" },
-    { "source": "/sscontruction/", "destination": "/ssconstructions/index.html" },
     { "source": "/ssconstruction", "destination": "/ssconstructions/index.html" },
-    { "source": "/ssconstruction/", "destination": "/ssconstructions/index.html" }
+    { "source": "/ssconstructions", "destination": "/ssconstructions/index.html" }
+  ],
+  "redirects": [
+    { "source": "/", "destination": "/sscontruction", "permanent": false }
   ]
 }
