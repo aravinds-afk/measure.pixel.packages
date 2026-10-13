@@ -136,7 +136,7 @@
   .hero .lede { margin-top: 28px; max-width: 54ch; }
   .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
 
-  .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-dark); }
+  .meta { position: relative; background: var(--ink); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-dark); }
   .meta div { padding: 20px 16px 0 0; }
   .meta dt { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted-dark); margin-bottom: 6px; }
   .meta dd { margin: 0; font-size: 15px; color: var(--paper); }
@@ -382,12 +382,6 @@
 </head>
 <body>
 
-<!-- ============================================================
-     EDITABLE ITEMS — search this file for "EDIT:" before sending.
-     1. WhatsApp approval number in the final CTA (and nav button).
-     2. Gold-dashed .ph placeholders (content quantities, dates, term).
-     ============================================================ -->
-
 <header class="nav" id="nav">
   <div class="wrap nav-inner">
     <a href="#top" class="brand" aria-label="Measure Pixel — proposal for SS Constructions">
@@ -404,7 +398,6 @@
       <a href="#plan">90 Days</a>
       <a href="#success">Success</a>
     </nav>
-    <a href="#approve" class="btn btn-gold btn-sm">Approve Phase 1</a>
   </div>
 </header>
 
@@ -447,18 +440,13 @@
         </div>
         <h1 class="reveal">Getting SS Constructions More <em>Qualified</em> Enquiries</h1>
         <p class="lede reveal">A coordinated growth system combining social media, video content, paid advertising, a conversion-focused landing page, and structured lead management — built and run by Measure Pixel as your growth partner.</p>
-        <div class="hero-actions reveal">
-          <a href="#investment" class="btn btn-gold">View Phase 1 Investment</a>
-          <a href="#scope" class="btn btn-ghost">See the Scope</a>
-        </div>
       </div>
 
       <dl class="meta reveal">
         <div><dt>Prepared for</dt><dd>Sathyaseelan<br>Founder, SS Constructions</dd></div>
         <div><dt>Prepared by</dt><dd>Measure Pixel</dd></div>
-        <!-- EDIT: proposal date and offer validity -->
         <div><dt>Date</dt><dd>October 2026</dd></div>
-        <div><dt>Offer valid until</dt><dd><span class="ph">[Confirm date]</span></dd></div>
+        <div><dt>Offer valid until</dt><dd>15 October 2026</dd></div>
       </dl>
     </div>
   </section>
@@ -537,10 +525,9 @@
             <li>Video editing and performance creative development</li>
             <li>Construction site, project progress, quality, process, and customer proof content</li>
           </ul>
-          <!-- EDIT: confirm monthly deliverable quantities -->
           <div class="scope-qty">
-            <div>Edited videos per month: <strong><span class="ph">[To be confirmed]</span></strong></div>
-            <div>Posts per month: <strong><span class="ph">[To be confirmed]</span></strong></div>
+            <div>Edited videos per month: <strong>6</strong></div>
+            <div>Posts per month: <strong>4</strong></div>
           </div>
         </article>
 
@@ -557,7 +544,7 @@
             <li>Lead quality and enquiry source tracking</li>
           </ul>
           <div class="scope-qty">
-            <div>Ad creatives per month: <strong><span class="ph">[To be confirmed]</span></strong></div>
+            <div>Ad creatives: <strong>Repurposed from the monthly social media videos</strong></div>
             <div>Platforms: <strong>Facebook &amp; Instagram (Meta)</strong></div>
           </div>
         </article>
@@ -575,8 +562,8 @@
             <li>Enquiry tracking and performance reporting</li>
           </ul>
           <div class="scope-qty">
-            <div>Reporting cadence: <strong><span class="ph">[To be confirmed]</span></strong></div>
-            <div>CRM platform: <strong><span class="ph">[To be confirmed]</span></strong></div>
+            <div>Reporting: <strong>Weekly</strong></div>
+            <div>CRM platform: <strong>TeleCRM</strong></div>
           </div>
         </article>
       </div>
@@ -830,8 +817,7 @@
         </li>
         <li>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
-          <!-- EDIT: confirm Phase 1 term -->
-          <span><strong>Phase 1 term:</strong> <span class="ph">[Confirm term, e.g. 3 months]</span>. All amounts are exclusive of applicable GST.</span>
+          <span><strong>Phase 1 term: 3 months.</strong> Aligned to the 90-day plan below. All amounts are exclusive of applicable GST.</span>
         </li>
       </ul>
     </div>
@@ -995,17 +981,6 @@
         <li class="reveal"><span class="n">03</span><div><h3>Launch within the first weeks</h3><p>Landing page, CRM, and campaigns go live following the Days 1–7 setup.</p></div></li>
       </ol>
 
-      <div class="cta-actions reveal">
-        <!-- EDIT: replace 91XXXXXXXXXX with the Measure Pixel WhatsApp number (country code, no + or spaces) -->
-        <a class="btn btn-gold" id="approveBtn"
-           href="https://wa.me/91XXXXXXXXXX?text=Hi%20Measure%20Pixel%2C%20I%27d%20like%20to%20approve%20Phase%201%20of%20the%20Construction%20Growth%20%26%20Lead%20Generation%20System%20for%20SS%20Constructions."
-           target="_blank" rel="noopener">
-          Approve Phase 1 &amp; Get Started
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="#investment">Review Investment</a>
-      </div>
-      <p class="cta-note reveal">Opens WhatsApp with a pre-filled approval message to the Measure Pixel team.</p>
     </div>
   </section>
 </main>

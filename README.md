@@ -6,8 +6,8 @@ Client proposal pages for Measure Pixel. Each folder is served as `measurepixel.
 | --- | --- |
 | `ssconstructions/` | SS Constructions — Construction Growth & Lead Generation System (Phase 1) |
 
-## Before sending a proposal
+## SS Constructions — confirmed details
 
-Search the page for `EDIT:` and replace:
-- WhatsApp approval number (`91XXXXXXXXXX`) in the final CTA
-- Gold dashed placeholders (`.ph`): deliverable quantities, offer validity, Phase 1 term
+- 6 edited videos and 4 posts per month; ad creatives repurposed from the social videos
+- Weekly reporting, TeleCRM, 3-month Phase 1 term, offer valid until 15 October 2026
+- No action buttons on the page by request
