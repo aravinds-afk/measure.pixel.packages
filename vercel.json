@@ -1,0 +1,13 @@
+{
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/sscontruction", "destination": "/ssconstructions/index.html" },
+    { "source": "/sscontruction/", "destination": "/ssconstructions/index.html" },
+    { "source": "/ssconstruction", "destination": "/ssconstructions/index.html" },
+    { "source": "/ssconstruction/", "destination": "/ssconstructions/index.html" }
+  ]
+}
