@@ -1,0 +1,10 @@
+# Minimal Supabase CLI configuration. Run `supabase init` to generate the full file if needed.
+project_id = "connectsphere"
+
+[functions.api]
+verify_jwt = true
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+enable_signup = false
