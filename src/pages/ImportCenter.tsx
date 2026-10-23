@@ -74,6 +74,7 @@ export default function ImportCenter() {
           <Button variant="secondary" onClick={() => onFile(new File([SAMPLE_CSV], "sample-members.csv", { type: "text/csv" }))}><FileUp className="h-4 w-4" /> Try the sample file</Button>
           {!IS_ARTIFACT && <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(SAMPLE_CSV)}`} download="connectsphere-sample-members.csv"><Button variant="secondary"><Download className="h-4 w-4" /> Sample CSV (fictional)</Button></a>}
         </>} />
+      {backend.workspace === "private" && <div className="mb-5"><Notice>Private workspace: the file is read in your browser and the members are stored only in this browser. Nothing is uploaded. Clearing your browser data deletes them.</Notice></div>}
       {session?.isDemo && <div className="mb-5"><Notice tone="warn">Demo mode: imported rows stay in this browser only and join the fictional demo chapter. Use the sample file or other non-real data. In a live deployment, imports into the demo chapter are refused.</Notice></div>}
       {err && <div className="mb-5"><ErrorNote message={err} /></div>}
 

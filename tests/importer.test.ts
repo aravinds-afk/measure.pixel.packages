@@ -75,3 +75,16 @@ describe("import pipeline", () => {
     expect(merged[0].memberId).toBe(DEMO_MEMBERS[0].id);
   });
 });
+
+describe("BNI-style roster columns", () => {
+  it("maps profile headings and picks the specific category column", () => {
+    const headers = ["First Name", "Last Name", "Company Name", "Profession", "Specialty", "City", "Top Product", "Top Problem Solved", "Ideal Referral", "My Business"];
+    const map = suggestMapping(headers);
+    expect(map["Top Product"]).toBe("services");
+    expect(map["Top Problem Solved"]).toBe("problemsSolved");
+    expect(map["My Business"]).toBe("businessDescription");
+    const plan = buildImportPlan([{ "First Name": "A", "Last Name": "B", Profession: "Finance & Insurance", Specialty: "Chartered Accountant" }], map, []);
+    expect(plan.rows[0].record.categoryId).toBe("chartered_accountant");
+    expect(plan.rows[0].record.categoryLabel).toBe("Chartered Accountant");
+  });
+});

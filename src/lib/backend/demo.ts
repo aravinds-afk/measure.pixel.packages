@@ -9,10 +9,14 @@ import type {
   ProfilePatch, ReferralRecord, Role, SavedConnection, Session,
 } from "./types.ts";
 
-const KEY = "connectsphere-demo-v1";
-const SESSION_KEY = "connectsphere-demo-session";
+export type LocalWorkspace = "demo" | "private";
+
+/** Private workspace: the user's real chapter, held only in this browser, never mixed with fictional data. */
+export const PRIVATE_CHAPTER = { id: "00000000-0000-4000-8000-0000000c0001", name: "My Chapter (private workspace)", isDemo: false };
+const PRIVATE_USER = { userId: "private-user", label: "You — chapter admin (this browser only)", role: "admin" as const };
 
 interface DemoState {
+  chapterName: string;
   members: MemberProfile[];
   contacts: Record<string, MemberContact>;
   priv: Record<string, MemberPrivate>;
@@ -33,7 +37,14 @@ const uid = () => (globalThis.crypto?.randomUUID?.() ?? `id-${Math.random().toSt
 const now = () => new Date().toISOString();
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
-function initialState(): DemoState {
+function initialState(kind: LocalWorkspace): DemoState {
+  if (kind === "private") {
+    return {
+      chapterName: PRIVATE_CHAPTER.name, members: [], contacts: {}, priv: {}, saved: [], meetings: [], referrals: [], feedback: [], suppressed: [],
+      settings: clone(DEFAULT_SETTINGS), importJobs: [], invitations: [], audit: [], history: {},
+      roles: { [PRIVATE_USER.userId]: { role: PRIVATE_USER.role, memberId: null, email: "This browser" } },
+    };
+  }
   const members = clone(DEMO_MEMBERS).map(({ email: _e, phone: _p, contactVisibility: _v, ...m }) => m as MemberProfile);
   const contacts: Record<string, MemberContact> = {};
   for (const m of DEMO_MEMBERS) if (m.email || m.phone) contacts[m.id] = { email: m.email ?? null, phone: m.phone ?? null, visibility: m.contactVisibility };
@@ -41,6 +52,7 @@ function initialState(): DemoState {
   for (const u of DEMO_USERS) roles[u.userId] = { role: u.role, memberId: u.memberId, email: u.email };
   const created = "2026-09-15T10:00:00.000Z";
   return {
+    chapterName: DEMO_CHAPTER.name,
     members,
     contacts,
     priv: {},
@@ -58,18 +70,25 @@ function initialState(): DemoState {
   };
 }
 
-function load(): DemoState {
+function load(kind: LocalWorkspace, key: string): DemoState {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as DemoState;
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const saved = JSON.parse(raw) as DemoState;
+      return { ...saved, chapterName: saved.chapterName ?? (kind === "private" ? PRIVATE_CHAPTER.name : DEMO_CHAPTER.name) };
+    }
   } catch {
     /* storage unavailable: fall back to a fresh in-memory state */
   }
-  return initialState();
+  return initialState(kind);
 }
 
-export function createDemoBackend(): Backend {
-  let state = load();
+export function createDemoBackend(kind: LocalWorkspace = "demo"): Backend {
+  const KEY = kind === "private" ? "connectsphere-private-v1" : "connectsphere-demo-v1";
+  const SESSION_KEY = kind === "private" ? "connectsphere-private-session" : "connectsphere-demo-session";
+  const CHAPTER = kind === "private" ? PRIVATE_CHAPTER : DEMO_CHAPTER;
+  const isDemo = kind === "demo";
+  let state = load(kind, KEY);
   let sessionUser: string | null = null;
   try {
     sessionUser = localStorage.getItem(SESSION_KEY);
@@ -122,7 +141,7 @@ export function createDemoBackend(): Backend {
     return [...map.values()];
   };
   const data = (): svc.ChapterData => ({
-    chapter: { id: DEMO_CHAPTER.id, name: DEMO_CHAPTER.name, isDemo: true, settings: state.settings },
+    chapter: { id: CHAPTER.id, name: state.chapterName, isDemo, settings: state.settings },
     members: visibleMembers(),
     referralStats: stats(),
     suppressedKeys: state.suppressed.map((s) => s.key),
@@ -144,7 +163,21 @@ export function createDemoBackend(): Backend {
 
   const backend: Backend = {
     mode: "demo",
-    demoPersonas: DEMO_USERS.map((u) => ({ userId: u.userId, label: u.label, role: u.role })),
+    workspace: kind,
+    demoPersonas: kind === "private" ? [PRIVATE_USER] : DEMO_USERS.map((u) => ({ userId: u.userId, label: u.label, role: u.role })),
+    async linkMyMember(memberId) {
+      requireAdmin();
+      if (memberId && !state.members.some((m) => m.id === memberId)) throw new Error("Member not found.");
+      for (const r of Object.values(state.roles)) if (r.memberId === memberId && memberId) r.memberId = null;
+      state.roles[me().userId].memberId = memberId;
+      commit(null);
+    },
+    async renameChapter(name) {
+      requireAdmin();
+      if (!name.trim()) throw new Error("Chapter name is required.");
+      state.chapterName = name.trim();
+      commit(null);
+    },
     async demoSignIn(userId) {
       sessionUser = userId;
       try {
@@ -155,14 +188,14 @@ export function createDemoBackend(): Backend {
       notify();
     },
     async demoReset() {
-      state = initialState();
+      state = initialState(kind);
       persist();
       notify();
     },
     async getSession(): Promise<Session | null> {
       if (!sessionUser || !state.roles[sessionUser]) return null;
       const r = state.roles[sessionUser];
-      return { userId: sessionUser, email: r.email, role: r.role, memberId: r.memberId, chapterId: DEMO_CHAPTER.id, chapterName: DEMO_CHAPTER.name, isDemo: true };
+      return { userId: sessionUser, email: r.email, role: r.role, memberId: r.memberId, chapterId: CHAPTER.id, chapterName: state.chapterName, isDemo };
     },
     onAuthChange(cb) {
       listeners.add(cb);
@@ -377,7 +410,7 @@ export function createDemoBackend(): Backend {
       const v = svc.validateSettings(s);
       if (!v.ok) throw new Error(v.errors.join(" "));
       state.settings = clone(s);
-      audit("chapters.update", "chapters", DEMO_CHAPTER.id, { settings: s });
+      audit("chapters.update", "chapters", CHAPTER.id, { settings: s });
       commit(null);
     },
     async importPreview(rows, mapping) {
@@ -404,8 +437,8 @@ export function createDemoBackend(): Backend {
           let m: MemberProfile | undefined;
           if (w.kind === "create") {
             m = {
-              id: uid(), chapterId: DEMO_CHAPTER.id, fullName: "", services: [], customerSegments: [], companySizes: [], industries: [], serviceAreas: [],
-              problemsSolved: [], keywords: [], relationships: [], sphereIds: [], status: "active", isDemo: true, source: options.source ?? "csv_import", fieldProvenance: {},
+              id: uid(), chapterId: CHAPTER.id, fullName: "", services: [], customerSegments: [], companySizes: [], industries: [], serviceAreas: [],
+              problemsSolved: [], keywords: [], relationships: [], sphereIds: [], status: "active", isDemo, source: options.source ?? "csv_import", fieldProvenance: {},
             };
             state.members.push(m);
             created++;
@@ -443,11 +476,11 @@ export function createDemoBackend(): Backend {
       if (!p.fullName?.trim()) throw new Error("Full name is required.");
       if (p.externalId && state.members.some((m) => m.externalId?.toLowerCase() === p.externalId?.toLowerCase())) throw new Error("A member with this member ID already exists.");
       const m: MemberProfile = {
-        id: uid(), chapterId: DEMO_CHAPTER.id, fullName: p.fullName.trim(), externalId: p.externalId ?? null, company: p.company ?? null, categoryId: p.categoryId ?? null,
+        id: uid(), chapterId: CHAPTER.id, fullName: p.fullName.trim(), externalId: p.externalId ?? null, company: p.company ?? null, categoryId: p.categoryId ?? null,
         categoryLabel: p.categoryLabel ?? null, businessDescription: p.businessDescription ?? null, website: p.website ?? null,
         services: p.services ?? [], customerSegments: p.customerSegments ?? [], companySizes: p.companySizes ?? [], industries: p.industries ?? [],
         serviceAreas: p.serviceAreas ?? [], problemsSolved: p.problemsSolved ?? [], keywords: p.keywords ?? [], icpDescription: p.icpDescription ?? null,
-        idealReferral: p.idealReferral ?? null, relationships: [], sphereIds: [], status: "active", isDemo: true, source: "manual", fieldProvenance: { fullName: "verified" }, profileUpdatedAt: now(),
+        idealReferral: p.idealReferral ?? null, relationships: [], sphereIds: [], status: "active", isDemo, source: "manual", fieldProvenance: { fullName: "verified" }, profileUpdatedAt: now(),
       };
       state.members.push(m);
       if (contact?.email || contact?.phone) state.contacts[m.id] = { email: contact.email ?? null, phone: contact.phone ?? null, visibility: contact.visibility ?? "chapter" };
@@ -514,7 +547,7 @@ export function createDemoBackend(): Backend {
       requireAdmin();
       const m = state.members.find((x) => x.id === memberId);
       if (!m) throw new Error("Member not found.");
-      if (Object.values(state.roles).some((r) => r.memberId === memberId)) throw new Error("Demo personas cannot be erased.");
+      if (Object.values(state.roles).some((r) => r.memberId === memberId)) throw new Error(isDemo ? "Demo personas cannot be erased." : "Unlink yourself from this member in Settings before erasing it.");
       state.members = state.members.filter((x) => x.id !== memberId);
       delete state.contacts[memberId];
       delete state.priv[memberId];

@@ -182,6 +182,11 @@ export interface Backend {
   signOut(): Promise<void>;
   /** Live mode only: set or change the signed-in user's password. */
   setPassword?(password: string): Promise<void>;
+  /** Browser-only modes: fictional demo or the user's private chapter workspace. */
+  workspace?: "demo" | "private";
+  /** Private workspace only: link the signed-in user to their own member record. */
+  linkMyMember?(memberId: string | null): Promise<void>;
+  renameChapter?(name: string): Promise<void>;
   /** Demo mode only. */
   demoPersonas?: { userId: string; label: string; role: Role }[];
   demoSignIn?(userId: string): Promise<void>;

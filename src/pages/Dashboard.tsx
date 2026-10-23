@@ -76,7 +76,13 @@ export default function Dashboard() {
         subtitle="Your highest-potential referral relationships and what to do about them this week."
         actions={<><Link to="/compatibility"><Button variant="secondary">Check compatibility</Button></Link><Link to="/find"><Button>Find a referral partner</Button></Link></>}
       />
-      {!myId && <div className="mb-6"><Notice>Your account is not linked to a member profile, so personal matches are hidden. Chapter-level insights are shown below.</Notice></div>}
+      {!myId && backend.workspace === "private" && (
+        <div className="mb-6"><Notice>
+          {q.data && !q.data.spheres.spheres.some((s) => s.present.length) ? <>Start by <Link className="font-medium text-blue-700 underline" to="/admin/import">importing your chapter roster</Link>. </> : null}
+          Then <Link className="font-medium text-blue-700 underline" to="/settings">choose which member you are</Link> to see your personal matches and referral opportunities.
+        </Notice></div>
+      )}
+      {!myId && backend.workspace !== "private" && <div className="mb-6"><Notice>Your account is not linked to a member profile, so personal matches are hidden. Chapter-level insights are shown below.</Notice></div>}
       {q.error && <ErrorNote message={q.error} />}
       {q.loading && !q.data ? <Spinner /> : q.data && derived && (
         <div className="grid gap-6 xl:grid-cols-3">

@@ -109,6 +109,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <span className="font-medium text-navy-900">{session?.chapterName}</span>
           </div>
           {session?.isDemo && <DemoBadge />}
+          {backend.workspace === "private" && <span className="rounded-full bg-navy-50 px-2 py-0.5 text-[11px] font-medium text-navy-800" title="Data is stored only in this browser.">Private · this browser</span>}
           <NavLink to="/members" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" aria-label="Search members"><Search className="h-5 w-5" /></NavLink>
         </header>
         {session?.isDemo && loc.pathname === "/" && (

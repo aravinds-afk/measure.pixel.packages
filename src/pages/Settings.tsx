@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Download, KeyRound, Lock, RotateCcw, Shield } from "lucide-react";
 import { useApp, useAsync } from "../lib/app.tsx";
+import { switchLocalWorkspace } from "../lib/backend/index.ts";
 import { IS_ARTIFACT } from "../lib/env.ts";
 import { Button, Card, CardHeader, ErrorNote, Field, Input, Notice, PageHeader, Select, Spinner } from "../components/ui.tsx";
 
 export default function Settings() {
-  const { backend, session, me, toast, refreshSession } = useApp();
+  const { backend, session, me, members, toast, refreshSession } = useApp();
+  const [chapterName, setChapterName] = useState(session?.chapterName ?? "");
+  const [confirmWipe, setConfirmWipe] = useState(false);
   const myId = session?.memberId;
   const contact = useAsync(() => (myId ? backend.getContact(myId) : Promise.resolve(null)), [myId]);
   const priv = useAsync(() => (myId ? backend.getPrivate(myId) : Promise.resolve(null)), [myId]);
@@ -46,6 +49,28 @@ export default function Settings() {
     <div>
       <PageHeader title="Privacy & account settings" subtitle="Control who sees your contact details and confidential figures, and get a copy of your data." />
       <div className="grid gap-6 lg:grid-cols-2">
+        {backend.workspace === "private" && (
+          <Card className="lg:col-span-2">
+            <CardHeader icon={<Lock className="h-4 w-4" />} title="Private workspace" subtitle="Your real chapter, stored only in this browser. Nothing is uploaded or shared." />
+            <div className="grid gap-4 p-5 sm:grid-cols-2">
+              <Field label="Which member are you?" hint="Links your matches, one-to-ones and referrals to your own record.">
+                <Select value={myId ?? ""} onChange={async (e) => { try { await backend.linkMyMember!(e.target.value || null); await refreshSession(); toast("Linked to your member record"); } catch (err) { toast((err as Error).message, "error"); } }}>
+                  <option value="">Not selected</option>
+                  {[...members].sort((a, b) => a.fullName.localeCompare(b.fullName)).map((m) => <option key={m.id} value={m.id}>{m.fullName}{m.company ? ` — ${m.company}` : ""}</option>)}
+                </Select>
+              </Field>
+              <Field label="Chapter name">
+                <div className="flex gap-2"><Input value={chapterName} onChange={(e) => setChapterName(e.target.value)} /><Button variant="secondary" onClick={async () => { try { await backend.renameChapter!(chapterName); await refreshSession(); toast("Chapter renamed"); } catch (err) { toast((err as Error).message, "error"); } }}>Save</Button></div>
+              </Field>
+              <div className="flex flex-wrap gap-2 sm:col-span-2">
+                {!confirmWipe ? <Button variant="secondary" onClick={() => setConfirmWipe(true)}>Delete all chapter data from this browser</Button> : (
+                  <><Button variant="danger" onClick={async () => { await backend.demoReset!(); await refreshSession(); setConfirmWipe(false); toast("All private workspace data deleted"); }}>Yes, delete everything</Button><Button variant="ghost" onClick={() => setConfirmWipe(false)}>Cancel</Button></>
+                )}
+                <Button variant="ghost" onClick={() => switchLocalWorkspace("demo")}>Switch to the fictional demo</Button>
+              </div>
+            </div>
+          </Card>
+        )}
         {myId ? (
           <Card>
             <CardHeader icon={<Lock className="h-4 w-4" />} title="Contact details" subtitle="Chapter admins can always see these; other members only if you allow it." />
@@ -98,7 +123,7 @@ export default function Settings() {
             <li>Administrative actions (imports, role changes, deactivations, erasures) are recorded in an audit log.</li>
           </ul>
         </Card>
-        {backend.demoReset && (
+        {backend.demoReset && backend.workspace === "demo" && (
           <Card className="lg:col-span-2">
             <CardHeader title="Demo data" subtitle="Everything in demo mode is fictional and stored only in this browser." />
             <div className="p-5"><Button variant="secondary" onClick={async () => { await backend.demoReset!(); await refreshSession(); toast("Demo data reset"); }}><RotateCcw className="h-4 w-4" /> Reset demo data</Button></div>

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { FlaskConical, Mail, ShieldCheck } from "lucide-react";
+import { FlaskConical, Lock, Mail, ShieldCheck } from "lucide-react";
+import { switchLocalWorkspace } from "../lib/backend/index.ts";
+import { DEMO_USERS } from "@shared/demo-data.ts";
 import { useApp } from "../lib/app.tsx";
 import { Button, Card, ErrorNote, Field, Input, Notice } from "../components/ui.tsx";
 
@@ -45,17 +47,38 @@ export default function Login() {
             <div>
               <div className="mb-1 flex items-center gap-2 text-violet-700"><FlaskConical className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wide">Demo mode</span></div>
               <h2 className="text-lg font-semibold text-navy-950">Explore with fictional data</h2>
-              <p className="mt-1 text-sm text-slate-600">No backend is configured, so ConnectSphere runs entirely in your browser with a fictional demo chapter. Choose a persona:</p>
+              <p className="mt-1 text-sm text-slate-600">A fictional demo chapter, held only in your browser. Choose a persona:</p>
               <div className="mt-4 space-y-2">
-                {backend.demoPersonas!.map((p) => (
-                  <button key={p.userId} onClick={() => run(async () => { await backend.demoSignIn!(p.userId); await refreshSession(); })}
+                {DEMO_USERS.map((p) => (
+                  <button key={p.userId} onClick={() => run(async () => {
+                    if (backend.workspace !== "demo") {
+                      try { localStorage.setItem("connectsphere-demo-session", p.userId); } catch { /* ignore */ }
+                      switchLocalWorkspace("demo");
+                      return;
+                    }
+                    await backend.demoSignIn!(p.userId);
+                    await refreshSession();
+                  })}
                     className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left text-sm hover:border-blue-300 hover:bg-blue-50/50">
                     <span className="font-medium text-navy-950">{p.label}</span>
                     <span className="rounded-full bg-navy-50 px-2 py-0.5 text-[11px] capitalize text-navy-800">{p.role}</span>
                   </button>
                 ))}
               </div>
-              <Notice>To use real chapter data, configure Supabase (see the setup guide). Demo and real data are never mixed.</Notice>
+              <div className="my-5 border-t border-slate-100" />
+              <div className="mb-1 flex items-center gap-2 text-navy-700"><Lock className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wide">Private workspace</span></div>
+              <h2 className="text-lg font-semibold text-navy-950">Use my real chapter</h2>
+              <p className="mt-1 text-sm text-slate-600">Starts empty, with no fictional members. Import your chapter roster; it stays in this browser only and is never uploaded or shared.</p>
+              <Button className="mt-3 w-full" onClick={() => run(async () => {
+                if (backend.workspace !== "private") {
+                  try { localStorage.setItem("connectsphere-private-session", "private-user"); } catch { /* ignore */ }
+                  switchLocalWorkspace("private");
+                  return;
+                }
+                await backend.demoSignIn!("private-user");
+                await refreshSession();
+              })}><Lock className="h-4 w-4" /> Open my private workspace</Button>
+              <div className="mt-4"><Notice>For chapter-wide sign-in with real accounts, deploy the live version (see the setup guide). Demo and real data are never mixed.</Notice></div>
             </div>
           ) : (
             <div className="space-y-4">

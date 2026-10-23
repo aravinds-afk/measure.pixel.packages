@@ -39,20 +39,20 @@ export const COLUMN_ALIASES: Record<FieldKey | "firstName" | "lastName", string[
   firstName: ["first name", "firstname", "given name"],
   lastName: ["last name", "lastname", "surname", "family name"],
   company: ["company", "company name", "business name", "business", "organisation", "organization", "firm"],
-  categoryLabel: ["category", "professional category", "profession", "classification", "speciality", "specialty", "business category", "primary category"],
+  categoryLabel: ["category", "professional category", "profession", "classification", "speciality", "specialty", "business category", "primary category", "profession specialty", "profession/specialty", "category specialty"],
   chapterName: ["chapter", "chapter name", "bni chapter"],
   region: ["region", "bni region", "area"],
   email: ["email", "email address", "e-mail", "mail"],
   phone: ["phone", "mobile", "phone number", "mobile number", "contact number", "telephone", "cell"],
   website: ["website", "web", "url", "website url", "company website"],
   photoUrl: ["photo", "photo url", "profile photo", "image", "picture"],
-  businessDescription: ["business description", "description", "about", "bio", "company description", "my business"],
-  services: ["services", "products and services", "products & services", "products", "offerings", "what i do"],
+  businessDescription: ["business description", "description", "about", "bio", "company description", "my business", "about my business"],
+  services: ["services", "products and services", "products & services", "products", "offerings", "what i do", "top product", "top products", "main products"],
   customerSegments: ["ideal customer", "ideal customers", "target market", "customer types", "customer type", "ideal customer profile", "icp", "who i serve", "target customers"],
   companySizes: ["company size", "target company size", "customer size", "client size"],
   industries: ["industries", "industries served", "industry", "sectors", "verticals"],
-  serviceAreas: ["service area", "service areas", "location", "city", "geography", "geographic service area", "territory", "locations served"],
-  problemsSolved: ["problems solved", "customer problems", "problems", "pain points", "typical problems", "challenges solved"],
+  serviceAreas: ["service area", "service areas", "location", "city", "geography", "geographic service area", "territory", "locations served", "business city", "areas served"],
+  problemsSolved: ["problems solved", "customer problems", "problems", "pain points", "typical problems", "challenges solved", "top problem solved", "top problems solved"],
   keywords: ["keywords", "tags", "key words", "search keywords"],
   icpDescription: ["icp description", "ideal customer description", "target market description"],
   idealReferral: ["ideal referral", "my ideal referral", "good referral", "referral wanted"],
@@ -107,8 +107,11 @@ export function normalizeRow(raw: Record<string, unknown>, mapping: Record<strin
     const parts = [one("firstName"), one("lastName")].filter(Boolean);
     fullName = parts.length ? parts.join(" ") : null;
   }
-  const categoryLabel = one("categoryLabel");
-  const categoryId = matchCategory(categoryLabel);
+  // Several columns may hold the category (e.g. "Profession" and "Specialty"); use the most specific one that maps.
+  const catValues = (pick.categoryLabel ?? []).map(str).filter((v): v is string => !!v);
+  const mapped = [...catValues].reverse().find((v) => matchCategory(v));
+  const categoryLabel = mapped ?? (catValues.length ? catValues[catValues.length - 1] : null);
+  const categoryId = matchCategory(mapped ?? catValues.join(" "));
   let email = one("email")?.toLowerCase() ?? null;
   let website = one("website");
   let phone = one("phone");
