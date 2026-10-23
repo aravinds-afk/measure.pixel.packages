@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, KeyRound, Lock, RotateCcw, Shield } from "lucide-react";
 import { useApp, useAsync } from "../lib/app.tsx";
+import { IS_ARTIFACT } from "../lib/env.ts";
 import { Button, Card, CardHeader, ErrorNote, Field, Input, Notice, PageHeader, Select, Spinner } from "../components/ui.tsx";
 
 export default function Settings() {
@@ -23,7 +24,17 @@ export default function Settings() {
 
   async function exportData() {
     const [saved, meetings, referrals, feedback, history] = await Promise.all([backend.listSaved(), backend.listMeetings(), backend.listReferrals(), backend.myFeedback(), myId ? backend.memberHistory(myId) : []]);
-    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), account: { email: session?.email, role: session?.role, chapter: session?.chapterName }, profile: me, contact: contact.data, confidential: priv.data, savedConnections: saved, meetings, referrals: referrals.filter((r) => r.giverId === myId || r.receiverId === myId), feedback, history }, null, 2)], { type: "application/json" });
+    const json = JSON.stringify({ exportedAt: new Date().toISOString(), account: { email: session?.email, role: session?.role, chapter: session?.chapterName }, profile: me, contact: contact.data, confidential: priv.data, savedConnections: saved, meetings, referrals: referrals.filter((r) => r.giverId === myId || r.receiverId === myId), feedback, history }, null, 2);
+    if (IS_ARTIFACT) {
+      try {
+        await navigator.clipboard.writeText(json);
+        toast("Your data was copied to the clipboard as JSON");
+      } catch {
+        toast("Copying is blocked in this browser.", "error");
+      }
+      return;
+    }
+    const blob = new Blob([json], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "connectsphere-my-data.json";
@@ -73,7 +84,7 @@ export default function Settings() {
           <CardHeader icon={<Download className="h-4 w-4" />} title="Your data" />
           <div className="space-y-3 p-5 text-sm text-slate-700">
             <p>Download everything ConnectSphere holds about you in this chapter: profile, contact settings, saved connections, meetings, referrals and feedback.</p>
-            <Button variant="secondary" onClick={exportData}><Download className="h-4 w-4" /> Export my data (JSON)</Button>
+            <Button variant="secondary" onClick={exportData}><Download className="h-4 w-4" /> {IS_ARTIFACT ? "Copy my data (JSON)" : "Export my data (JSON)"}</Button>
             <p className="text-xs text-slate-500">To correct imported information, edit your profile — your edits are marked member-submitted and are not overwritten by later imports. To leave the chapter or have your data erased, ask your chapter admin; erasure removes your profile, contact details and relationship records permanently.</p>
           </div>
         </Card>

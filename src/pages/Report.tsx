@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { getCategory, getSphere, type CompatibilityResult, type MemberProfile, type ReferralOpportunity, type Scripts } from "@engine/index.ts";
 import { useApp, useAsync } from "../lib/app.tsx";
+import { IS_ARTIFACT } from "../lib/env.ts";
 import type { Feedback } from "../lib/backend/index.ts";
 import {
   Avatar, Badge, Bar, Button, Card, CardHeader, CategoryIcon, categoryName, ConfidenceBadge, CopyButton, ErrorNote, Modal, Notice, ProvenanceBadge,
@@ -32,13 +33,18 @@ export default function Report() {
     const url = window.location.href;
     const text = `${ma!.fullName} + ${mb!.fullName}: ${r.score}/100 (${r.label}) on ConnectSphere`;
     try {
-      if (navigator.share) await navigator.share({ title: "Compatibility report", text, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast("Link copied. Only chapter members can open it.", "info");
+      if (navigator.share && !IS_ARTIFACT) {
+        await navigator.share({ title: "Compatibility report", text, url });
+        return;
       }
     } catch {
-      /* cancelled */
+      /* share unavailable or cancelled: fall back to copying */
+    }
+    try {
+      await navigator.clipboard.writeText(IS_ARTIFACT ? `${text}\n\n${r.summary}` : url);
+      toast(IS_ARTIFACT ? "Report summary copied" : "Link copied. Only chapter members can open it.", "info");
+    } catch {
+      toast("Copying is blocked in this browser.", "error");
     }
   }
 
@@ -50,7 +56,7 @@ export default function Report() {
           {involved && <Button variant="secondary" onClick={async () => { try { await backend.saveConnection(other.id, r.score); toast("Saved to your connections"); } catch (e) { toast((e as Error).message, "error"); } }}><Bookmark className="h-4 w-4" /> Save</Button>}
           {involved && <Link to={`/meetings?with=${other.id}`}><Button variant="secondary"><CalendarCheck className="h-4 w-4" /> Plan one-to-one</Button></Link>}
           <Button variant="secondary" onClick={share}><Share2 className="h-4 w-4" /> Share</Button>
-          <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4" /> Export PDF</Button>
+          {!IS_ARTIFACT && <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4" /> Export PDF</Button>}
         </div>
       </div>
 

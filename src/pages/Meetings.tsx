@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CalendarCheck, Mail, Plus, Printer, Save } from "lucide-react";
 import type { MeetingBrief } from "@engine/index.ts";
 import { useApp, useAsync } from "../lib/app.tsx";
+import { IS_ARTIFACT } from "../lib/env.ts";
 import type { Meeting } from "../lib/backend/index.ts";
 import { MemberPicker } from "../components/MemberPicker.tsx";
 import { Avatar, Badge, Button, Card, CardHeader, CopyButton, EmptyState, ErrorNote, Field, fmtDate, Input, MemberChip, Notice, PageHeader, ScorePill, Select, Spinner, Textarea } from "../components/ui.tsx";
@@ -173,7 +174,7 @@ function MeetingDetail({ meeting, onChange, onBack }: { meeting: Meeting; onChan
           {text && <CopyButton text={text} label="Copy brief" />}
           {text && <a href={`mailto:?subject=${encodeURIComponent("One-to-one brief")}&body=${encodeURIComponent(text)}`}><Button variant="secondary" size="sm"><Mail className="h-3.5 w-3.5" /> Email</Button></a>}
           {text && <a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer"><Button variant="secondary" size="sm">WhatsApp</Button></a>}
-          <Button variant="secondary" size="sm" onClick={() => window.print()}><Printer className="h-3.5 w-3.5" /> Export PDF</Button>
+          {!IS_ARTIFACT && <Button variant="secondary" size="sm" onClick={() => window.print()}><Printer className="h-3.5 w-3.5" /> Export PDF</Button>}
         </div>
       </div>
       <div className="flex items-center gap-3">

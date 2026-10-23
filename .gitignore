@@ -4,3 +4,4 @@ dist
 .env.local
 e2e/screenshots
 supabase/.temp
+dist-artifact

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CheckCircle2, Download, FileUp, Link2, RefreshCw, Upload } from "lucide-react";
 import { COLUMN_ALIASES, suggestMapping, type ImportPlan, type PlanAction } from "@engine/index.ts";
 import { useApp, useAsync } from "../lib/app.tsx";
+import { IS_ARTIFACT } from "../lib/env.ts";
 import { parseMemberFile, SAMPLE_CSV, type ParsedFile } from "../lib/parseFile.ts";
 import type { ImportCommitResult } from "../lib/backend/index.ts";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorNote, fmtDate, Notice, PageHeader, Select, Spinner } from "../components/ui.tsx";
@@ -69,7 +70,10 @@ export default function ImportCenter() {
   return (
     <div>
       <PageHeader title="Import & synchronisation centre" subtitle="Load authorised member data from official CSV or Excel exports. Every import is validated, de-duplicated, previewed before anything is written, and logged."
-        actions={<a href={`data:text/csv;charset=utf-8,${encodeURIComponent(SAMPLE_CSV)}`} download="connectsphere-sample-members.csv"><Button variant="secondary"><Download className="h-4 w-4" /> Sample CSV (fictional)</Button></a>} />
+        actions={<>
+          <Button variant="secondary" onClick={() => onFile(new File([SAMPLE_CSV], "sample-members.csv", { type: "text/csv" }))}><FileUp className="h-4 w-4" /> Try the sample file</Button>
+          {!IS_ARTIFACT && <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(SAMPLE_CSV)}`} download="connectsphere-sample-members.csv"><Button variant="secondary"><Download className="h-4 w-4" /> Sample CSV (fictional)</Button></a>}
+        </>} />
       {session?.isDemo && <div className="mb-5"><Notice tone="warn">Demo mode: imported rows stay in this browser only and join the fictional demo chapter. Use the sample file or other non-real data. In a live deployment, imports into the demo chapter are refused.</Notice></div>}
       {err && <div className="mb-5"><ErrorNote message={err} /></div>}
 
