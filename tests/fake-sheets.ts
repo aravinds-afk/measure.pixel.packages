@@ -24,6 +24,7 @@ export function fakeSheets(opts: { failOnce?: RegExp } = {}) {
     }
     if (path === ":batchUpdate") {
       const replies: unknown[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       for (const r of (body!.requests as Record<string, any>[])) {
         if (r.addSheet) {
           const title = r.addSheet.properties.title;

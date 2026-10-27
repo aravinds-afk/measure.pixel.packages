@@ -3,7 +3,7 @@ import type { QuoteStatus } from "./quote-schema";
 /**
  * Revenue dashboard maths. Signed = accepted quotations only (latest
  * accepted version per quotation). Pipeline = presented/sent and not expired,
- * latest version per quotation. Drafts never count. Amounts are net of
+ * latest issued version per quotation. Drafts never count. Amounts are net of
  * discount and excluding tax (revenue, not cash and not profit).
  */
 
@@ -29,8 +29,10 @@ export type RevenueInputs = {
 };
 
 export function revenueSummary(input: RevenueInputs) {
+  // Latest *issued* version per quotation: a draft revision does not hide the version the client holds.
   const latestByRoot = new Map<string, RevenueQuote>();
   for (const q of input.quotes) {
+    if (q.status === "draft") continue;
     const cur = latestByRoot.get(q.rootId);
     if (!cur || q.version > cur.version) latestByRoot.set(q.rootId, q);
   }

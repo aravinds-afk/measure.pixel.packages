@@ -49,7 +49,15 @@ export async function enqueue(db: DB, entity: SyncEntity, entityId: string): Pro
 export async function syncNow(db: DB, entity: SyncEntity, entityId: string, api = defaultApi()?.api): Promise<SyncOutcome> {
   const jobId = await enqueue(db, entity, entityId);
   if (!api) return { status: "not_configured", jobId };
-  return runJobs(db, api, [jobId]).then((r) => r[jobId] ?? { status: "queued", jobId });
+  // Catch up on a few earlier queued writes in the same pass.
+  const backlog = await db
+    .select({ id: s.syncJobs.id })
+    .from(s.syncJobs)
+    .where(or(eq(s.syncJobs.status, "pending"), and(eq(s.syncJobs.status, "failed"), lt(s.syncJobs.attempts, MAX_ATTEMPTS))))
+    .orderBy(asc(s.syncJobs.createdAt))
+    .limit(10);
+  const ids = [...new Set([...backlog.map((b) => b.id).filter((id) => id !== jobId), jobId])];
+  return runJobs(db, api, ids).then((r) => r[jobId] ?? { status: "queued", jobId });
 }
 
 /** Process due jobs (pending, or failed with attempts left). */

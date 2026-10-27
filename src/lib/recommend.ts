@@ -66,6 +66,7 @@ export type OfferRecommendation = {
   industryFit: "suggested" | "cluster" | "any" | "outside";
   why: string;
   outcome: string;
+  components: { label: string; serviceIds: string[] }[];
   componentsInPlace: { label: string; serviceIds: string[] }[];
   dependencies: string[];
   missingInfo: string[];
@@ -213,6 +214,7 @@ export function recommend(catalog: Catalog, input: RecommendationInput): Recomme
       industryFit,
       why: whyParts.join(" "),
       outcome: rule.outcome,
+      components: offer.components.map((c) => ({ label: c.label, serviceIds: c.serviceIds })),
       componentsInPlace,
       dependencies,
       missingInfo,
