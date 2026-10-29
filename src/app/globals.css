@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f0eb;
+  --color-border: #e3e3dc;
+  --color-border-strong: #cfcfc7;
+  --color-ink: #121212;
+  --color-ink-2: #55554f;
+  --color-ink-3: #85857e;
+  --color-accent: #d4f25c;
+  --color-accent-soft: #eef9c6;
+  --color-panel: #151515;
+  --color-ok: #1f7a3a;
+  --color-ok-soft: #e7f4ea;
+  --color-warn: #a15c07;
+  --color-warn-soft: #fdf1df;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-info: #2457c5;
+  --color-info-soft: #e9effc;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --radius-card: 14px;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 72px; scroll-padding-bottom: 150px; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1, "cv11" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; border-radius: 6px; }
+  input, select, textarea, button { font: inherit; }
+  summary { cursor: pointer; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+}
+
+@layer components {
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--color-ink-3); }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .field {
+    width: 100%; min-height: 44px; border: 1px solid var(--color-border); background: var(--color-surface);
+    border-radius: 10px; padding: 10px 12px; font-size: 16px; color: var(--color-ink);
+  }
+  .field:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 3px rgb(18 18 18 / 0.08); }
+  .field:disabled { background: var(--color-surface-2); color: var(--color-ink-2); }
+  textarea.field { min-height: 88px; line-height: 1.45; }
+  .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}
