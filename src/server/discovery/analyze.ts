@@ -276,11 +276,7 @@ function summarise(result: DiscoveryResult, facts: PageFacts[], industries: Indu
 
   // ---- Industry suggestions (keyword matches = inference)
   const haystack = [homeFacts.title, homeFacts.metaDescription, ...homeFacts.h1, ...homeFacts.h2, ...facts.map((f) => f.textSample)].join(" ").toLowerCase();
-  result.industrySuggestions = industries
-    .map((ind) => ({ industryId: ind.id, name: ind.name, matched: ind.keywords.filter((k) => new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i").test(haystack)) }))
-    .filter((s) => s.matched.length > 0)
-    .sort((a, b) => b.matched.length - a.matched.length)
-    .slice(0, 3);
+  result.industrySuggestions = suggestIndustries(haystack, industries);
   for (const s of result.industrySuggestions) obs.push({ kind: "inference", area: "Industry", text: `Possibly ${s.name} (website mentions: ${s.matched.join(", ")})` });
 
   // Social profiles linked from the site but not supplied by the consultant.
@@ -300,3 +296,13 @@ function manualSocialChecks(input: DiscoveryInput) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const cap = (s: string) => (s === "x" ? "X" : s[0].toUpperCase() + s.slice(1));
+
+/** Keyword match of free text (site copy, an Instagram bio) against industry keywords. Inference only. */
+export function suggestIndustries(text: string, industries: IndustryKw[]) {
+  const haystack = text.toLowerCase();
+  return industries
+    .map((ind) => ({ industryId: ind.id, name: ind.name, matched: ind.keywords.filter((k) => new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i").test(haystack)) }))
+    .filter((s) => s.matched.length > 0)
+    .sort((a, b) => b.matched.length - a.matched.length)
+    .slice(0, 3);
+}

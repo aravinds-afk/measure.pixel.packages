@@ -16,6 +16,7 @@ const defaultsInPaise = (): Settings => ({
     startingSigned: rupeesToPaise(DEFAULT_SETTINGS.revenue.startingSigned),
     profitFloorMonthly: rupeesToPaise(DEFAULT_SETTINGS.revenue.profitFloorMonthly),
   },
+  plan: { ...DEFAULT_SETTINGS.plan, avgRetainer: rupeesToPaise(DEFAULT_SETTINGS.plan.avgRetainer) },
 });
 
 export async function getSettings(db: DB = getDb()): Promise<Settings> {

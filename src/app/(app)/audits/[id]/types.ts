@@ -6,7 +6,7 @@ export type Response = {
   status: Status;
   notes?: string;
   evidence?: string;
-  source?: "auto-verified" | "consultant";
+  source?: "auto-verified" | "auto-inferred" | "consultant";
   confirmedByClient?: boolean;
   suggestion?: { status: string; note: string; evidence?: string } | null;
 };

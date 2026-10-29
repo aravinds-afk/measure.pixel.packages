@@ -21,7 +21,7 @@ function Form() {
         try {
           await api("/api/auth/login", { body: { email: fd.get("email"), password: fd.get("password") } });
           const next = params.get("next");
-          router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/audits/new");
+          router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : "/today");
           router.refresh();
         } catch (err) {
           setError((err as Error).message);

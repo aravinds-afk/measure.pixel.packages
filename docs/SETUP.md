@@ -19,6 +19,8 @@ Edit `.env.local`:
 | `APP_URL` | yes | Public base URL, e.g. `https://advisor.measurepixel.in` (used in shareable links and the Sheets link column) |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEETS_SPREADSHEET_ID` | for Sheets | See section 3 |
 | `CRON_SECRET` | for scheduled retries | Random string; Vercel Cron sends it as a Bearer token |
+| `APIFY_TOKEN` | for Instagram in automatic audits | Apify API token; runs `apify/instagram-profile-scraper` (paid per run). Without it, Instagram is listed as a manual check |
+| `ANTHROPIC_API_KEY` | for the AI morning brief | Claude API key. Without it, the Today page shows the plan without the written brief |
 
 ```bash
 npm run db:setup     # creates tables and seeds the catalogue from the Opportunity Board
@@ -99,7 +101,13 @@ Discovery runs server-side: it fetches `robots.txt`, then the homepage and up to
 
 The host must allow outbound HTTPS. Behind a forward proxy, discovery reports sites as unreachable — it does not route through proxies, because the connect-time IP check would no longer apply.
 
-## 6. Testing
+## 6. Automatic audit and the Today page
+
+- **New Audit** now starts with one box: paste a website and/or Instagram link and press *Run automatic audit*. The server reads the public site (and Instagram through Apify), fills the audit — conclusive evidence as *Verified*, weaker signals as *Inferred* — detects the industry, saves recommendations and drafts a quotation at board-band minimums. It opens on a **prescription** page with the findings, the prescribed offers and the questions to ask the client (things a public website can't show). Everything stays editable; *Start a manual audit* is still there.
+- **Today** is the home screen: day N of the 90-day plan (29 Oct 2026 → 26 Jan 2027), signed vs ₹3L target and the conversation pace needed, today's three priorities, the season (who to target, what they search for, which offer to lead with), the full day's tasks by channel (LinkedIn, Instagram, YouTube, BNI, pipeline) with tick-off, the next 3 days, the roadmap, visibility plays and income-stream milestones. Pipeline items (due follow-ups, quotations about to expire, unsent drafts, audits without a quote) are added automatically.
+- The plan content lives in `src/data/growth-plan.ts`. Seasonal windows are planning assumptions for Chennai; change them there.
+
+## 7. Testing
 
 ```bash
 npm test             # 51 unit / persistence / sync tests

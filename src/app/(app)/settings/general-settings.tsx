@@ -24,6 +24,7 @@ export function GeneralSettings({ settings }: { settings: Settings }) {
   const [pricing, setPricing] = useState(settings.pricing);
   const [quote, setQuote] = useState(settings.quote);
   const [company, setCompany] = useState(settings.company);
+  const [plan, setPlan] = useState(settings.plan);
   const num = (v: string) => Number(v.replace(/[^\d.]/g, "")) || 0;
 
   return (
@@ -35,6 +36,11 @@ export function GeneralSettings({ settings }: { settings: Settings }) {
         <Field label="Clients behind the starting figure" htmlFor="r-c"><Input id="r-c" inputMode="numeric" value={rev.startingSignedClients} onChange={(e) => setRev({ ...rev, startingSignedClients: num(e.target.value) })} /></Field>
         <Field label="Window start" htmlFor="r-w"><Input id="r-w" type="date" value={rev.windowStart} onChange={(e) => setRev({ ...rev, windowStart: e.target.value })} /></Field>
         <Field label="Profit floor per client (monthly)" htmlFor="r-p"><MoneyInput id="r-p" value={rev.profitFloorMonthly} onChange={(v) => setRev({ ...rev, profitFloorMonthly: v })} /></Field>
+      </Block>
+
+      <Block title="Morning plan" sub="Used for the pace on the Today page." busy={busy} onSave={() => save({ key: "plan", value: plan })}>
+        <Field label="Average retainer (monthly)" htmlFor="pl-a"><MoneyInput id="pl-a" value={plan.avgRetainer} onChange={(v) => setPlan({ ...plan, avgRetainer: v })} /></Field>
+        <Field label="Close rate (%)" htmlFor="pl-c" hint="The board assumes 1 in 5 (20%)"><Input id="pl-c" inputMode="numeric" value={Math.round(plan.closeRate * 100)} onChange={(e) => setPlan({ ...plan, closeRate: Math.min(100, Math.max(1, num(e.target.value))) / 100 })} /></Field>
       </Block>
 
       <Block title="Tax" sub="Default for new quotations. Not on the board — confirm with your accountant." busy={busy} onSave={() => save({ key: "tax", value: tax })}>

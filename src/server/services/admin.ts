@@ -82,7 +82,7 @@ const tables = { services: s.services, offers: s.offers, industries: s.industrie
 
 export async function upsertEntity(db: DB, actor: CurrentUser, entity: AdminEntity, body: unknown) {
   if (entity === "settings") {
-    const { key, value } = z.object({ key: z.enum(["revenue", "tax", "pricing", "quote", "company"]), value: z.record(z.string(), z.unknown()) }).parse(body);
+    const { key, value } = z.object({ key: z.enum(["revenue", "tax", "pricing", "quote", "company", "plan"]), value: z.record(z.string(), z.unknown()) }).parse(body);
     await saveSetting(key, value as never as Settings[typeof key], actor.id, db);
     return { ok: true };
   }

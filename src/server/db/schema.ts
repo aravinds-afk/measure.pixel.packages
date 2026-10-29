@@ -183,7 +183,7 @@ export type AuditResponseRow = {
   notes?: string;
   evidence?: string;
   /** auto-verified: set from website evidence. consultant: set or changed by a person. */
-  source?: "auto-verified" | "consultant";
+  source?: "auto-verified" | "auto-inferred" | "consultant";
   confirmedByClient?: boolean;
   suggestion?: { status: string; note: string; evidence?: string } | null;
 };
@@ -324,4 +324,21 @@ export const rateLimits = sqliteTable("rate_limits", {
   key: text("key").primaryKey(),
   windowStart: integer("window_start").notNull(),
   count: integer("count").notNull(),
+});
+
+/** Ticked-off tasks on the morning page, one row per task per day. */
+export const planProgress = sqliteTable("plan_progress", {
+  id: text("id").primaryKey(), // `${date}:${taskKey}`
+  date: text("date").notNull(),
+  taskKey: text("task_key").notNull(),
+  doneBy: text("done_by"),
+  doneAt: text("done_at").notNull(),
+});
+
+/** The AI-written morning brief, cached once per day. */
+export const briefs = sqliteTable("briefs", {
+  date: text("date").primaryKey(),
+  text: text("text").notNull(),
+  model: text("model").notNull(),
+  createdAt: createdAt(),
 });

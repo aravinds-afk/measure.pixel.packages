@@ -102,6 +102,7 @@ export async function seedCatalog(db: DB) {
 
 /** Settings store money in paise like everything else. */
 function rupeeSettings(key: string, value: unknown) {
+  if (key === "plan") return { ...(value as typeof DEFAULT_SETTINGS.plan), avgRetainer: rupeesToPaise((value as typeof DEFAULT_SETTINGS.plan).avgRetainer) };
   if (key !== "revenue") return value;
   const r = value as typeof DEFAULT_SETTINGS.revenue;
   return { ...r, targetMonthly: rupeesToPaise(r.targetMonthly), startingSigned: rupeesToPaise(r.startingSigned), profitFloorMonthly: rupeesToPaise(r.profitFloorMonthly) };

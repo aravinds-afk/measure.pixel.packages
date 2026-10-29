@@ -74,7 +74,7 @@ const responseSchema = z.object({
   status: z.enum(["working_well", "needs_improvement", "missing", "not_applicable", "not_assessed"]),
   notes: z.string().max(2000).optional(),
   evidence: z.string().max(2000).optional(),
-  source: z.enum(["auto-verified", "consultant"]).optional(),
+  source: z.enum(["auto-verified", "auto-inferred", "consultant"]).optional(),
   confirmedByClient: z.boolean().optional(),
   suggestion: z.object({ status: z.string(), note: z.string(), evidence: z.string().optional() }).nullable().optional(),
 });

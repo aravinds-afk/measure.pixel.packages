@@ -274,6 +274,8 @@ export const DEFAULT_SETTINGS = {
   },
   tax: { enabled: true, label: "GST", ratePercent: 18, note: "Default rate — confirm with your accountant." },
   pricing: { consultantMaxDiscountPercent: 10, currency: "INR" },
+  /** Morning-page pace assumptions: average retainer (₹/month) and the board's 1-in-5 close rate. */
+  plan: { avgRetainer: 50000, closeRate: 0.2, timeZone: "Asia/Kolkata" },
   quote: {
     validityDays: 15,
     numberPrefix: "MPQ",

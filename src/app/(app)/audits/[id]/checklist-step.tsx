@@ -118,6 +118,7 @@ function ChecklistItem({ item, r, onChange, onRemove }: { item: Item; r: Respons
           {item.priority === "high" && <Badge tone="danger">High</Badge>}
           {item.custom && <Badge tone="info">Custom</Badge>}
           {r?.source === "auto-verified" && <Badge tone="ok">Verified on site</Badge>}
+          {r?.source === "auto-inferred" && <Badge tone="info">Inferred — confirm</Badge>}
           {r?.confirmedByClient && <Badge tone="dark">Client confirmed</Badge>}
         </div>
       </div>

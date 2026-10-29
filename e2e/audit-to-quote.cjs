@@ -27,7 +27,10 @@ if (!C_EMAIL || !C_PASS || !A_EMAIL || !A_PASS) { console.error("Set E2E_CONSULT
   await page.fill("#email", C_EMAIL);
   await page.fill("#password", C_PASS);
   await page.click("button[type=submit]");
-  await page.waitForURL("**/audits/new");
+  await page.waitForURL("**/today");
+  await page.waitForSelector("text=Today's three");
+  await shot("00-today");
+  await page.goto(`${BASE}/audits/new?manual=1`);
   await shot("01-discovery");
 
   step("start audit");
@@ -155,7 +158,7 @@ if (!C_EMAIL || !C_PASS || !A_EMAIL || !A_PASS) { console.error("Set E2E_CONSULT
   await dp.fill("#email", A_EMAIL);
   await dp.fill("#password", A_PASS);
   await dp.click("button[type=submit]");
-  await dp.waitForURL("**/audits/new");
+  await dp.waitForURL("**/today");
   await dp.goto(page.url().includes("/quotes/") ? page.url() : `${BASE}/quotes`);
   await dp.goto(`${BASE}/quotes`);
   await dp.click("ul.card a >> nth=0");

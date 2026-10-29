@@ -3,13 +3,14 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import * as s from "@/server/db/schema";
 import { requirePageUser } from "@/server/auth";
+import { AutoAuditForm } from "./auto-form";
 import { DiscoveryForm } from "./discovery-form";
 
 export const metadata = { title: "New brand audit" };
 
-export default async function NewAuditPage({ searchParams }: { searchParams: Promise<{ clientId?: string }> }) {
+export default async function NewAuditPage({ searchParams }: { searchParams: Promise<{ clientId?: string; manual?: string }> }) {
   await requirePageUser();
-  const { clientId } = await searchParams;
+  const { clientId, manual } = await searchParams;
   const db = getDb();
   const [client] = clientId ? await db.select().from(s.clients).where(eq(s.clients.id, clientId)) : [];
   const drafts = await db
@@ -29,7 +30,11 @@ export default async function NewAuditPage({ searchParams }: { searchParams: Pro
         <span className="text-ink-3">Find the growth opportunity.</span>
       </h1>
       <div className="mt-8">
-        <DiscoveryForm client={client ? { id: client.id, businessName: client.businessName, website: client.website, instagram: client.instagram, linkedin: client.linkedin, youtube: client.youtube, otherLinks: client.otherLinks } : null} />
+        {manual ? (
+          <DiscoveryForm client={client ? { id: client.id, businessName: client.businessName, website: client.website, instagram: client.instagram, linkedin: client.linkedin, youtube: client.youtube, otherLinks: client.otherLinks } : null} />
+        ) : (
+          <AutoAuditForm clientId={client?.id} defaults={client ? { website: client.website, instagram: client.instagram, name: client.businessName } : undefined} />
+        )}
       </div>
       {drafts.length > 0 && (
         <section className="mt-12">
