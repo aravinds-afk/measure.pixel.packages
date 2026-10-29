@@ -77,10 +77,13 @@ Cells are written with `valueInputOption=RAW`, so client-entered text is never e
 ### Retries
 
 - Failed or queued writes show in **Settings → Google Sheets** with Google's error; **Retry queued writes** re-runs them.
-- `GET /api/cron/sync` (Bearer `CRON_SECRET`) processes the queue; `vercel.json` schedules it every 15 minutes. Vercel Hobby plans only allow daily crons — change the schedule or run `npm run sheets:sync` manually.
+- `GET /api/cron/sync` (Bearer `CRON_SECRET`) processes the queue; `vercel.json` schedules it once a day (02:47 IST), the most a Vercel Hobby plan allows; on Pro you can make it more frequent. Run `npm run sheets:sync` for an immediate retry.
 - A job is retried up to 8 times. Errors are logged without tokens or keys.
 
 ## 4. Deploy (Vercel + Turso)
+
+The Vercel build runs `npm run db:setup` first (migrations + catalogue seed, both idempotent) and creates the first admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD` when the database has no users. The manual steps below remain valid.
+
 
 1. **Database:** create a Turso database (`turso db create mp-advisor`), get the URL (`turso db show mp-advisor --url`) and a token (`turso db tokens create mp-advisor`).
 2. **Migrate and seed** from your machine against production:
