@@ -1,0 +1,641 @@
+<title>Measure Pixel Growth Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column app shell, tab bar on top, sticky investment bar at the bottom of the builder. */
+:root{
+  --bg:#f5f5f0;--surface:#ffffff;--surface-2:#ecece5;--line:#dcdcd2;--ink:#141412;--ink-2:#55554e;--ink-3:#868680;
+  --accent:#d4f25c;--accent-ink:#141412;--panel:#161614;--panel-ink:#f5f5f0;
+  --ok:#1f7a3a;--ok-bg:#e4f3e8;--warn:#9a5b06;--warn-bg:#fbf0dc;--bad:#b42318;--bad-bg:#fbe9e7;--info:#2457c5;--info-bg:#e8eefb;
+  --sans:"Geist",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--mono:"Geist Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121211;--surface:#1b1b19;--surface-2:#252522;--line:#33332f;--ink:#f1f1ea;--ink-2:#b3b3aa;--ink-3:#85857d;
+  --accent:#d4f25c;--accent-ink:#141412;--panel:#0b0b0a;--panel-ink:#f1f1ea;
+  --ok:#6fd38e;--ok-bg:#16301f;--warn:#f0b65a;--warn-bg:#33270f;--bad:#ff8a7a;--bad-bg:#3a1714;--info:#8fb0ff;--info-bg:#18223a;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121211;--surface:#1b1b19;--surface-2:#252522;--line:#33332f;--ink:#f1f1ea;--ink-2:#b3b3aa;--ink-3:#85857d;
+  --accent:#d4f25c;--accent-ink:#141412;--panel:#0b0b0a;--panel-ink:#f1f1ea;
+  --ok:#6fd38e;--ok-bg:#16301f;--warn:#f0b65a;--warn-bg:#33270f;--bad:#ff8a7a;--bad-bg:#3a1714;--info:#8fb0ff;--info-bg:#18223a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:12px;letter-spacing:.2em}
+.brand i{width:13px;height:13px;border-radius:3px;background:var(--accent);display:block}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;margin-left:auto;max-width:100%}
+nav.tabs a{flex:none;text-decoration:none;color:var(--ink-2);font-weight:500;font-size:14px;padding:8px 13px;border-radius:999px}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+main{padding-block:24px 140px}
+h1{font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:0 0 4px;text-wrap:balance}
+h2{font-size:18px;letter-spacing:-.01em;margin:0}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.sub{color:var(--ink-2);font-size:14px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink-3)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.panel{background:var(--panel);color:var(--panel-ink);border-radius:16px;padding:24px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2);font-weight:500;min-width:0}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;width:100%}
+textarea{min-height:76px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;text-decoration:none}
+.btn.sec{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.lime{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:transparent}
+.btn.sm{min-height:34px;padding:0 11px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{min-height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.ww[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.ni[aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.chip.mi[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.info{background:var(--info-bg);color:var(--info)}.pill.lime{background:var(--accent);color:var(--accent-ink)}
+.quote{font-style:italic;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 14px;font-size:14px}
+.quote[aria-pressed="true"]{border-color:var(--ink);background:color-mix(in srgb,var(--accent) 30%,var(--surface))}
+details.cat{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+details.cat>summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+details.cat>summary::-webkit-details-marker{display:none}
+.item{padding:12px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px}
+.kv.big{font-weight:700;font-size:16px}
+.muted{color:var(--ink-3)}
+.line{border-top:1px solid var(--line);margin:8px 0}
+.bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--ink);border-radius:4px}
+.panel .bar{background:rgba(255,255,255,.12)}.panel .bar>i{background:var(--accent)}
+.sticky-tot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sticky-tot .wrap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:center;padding-block:10px}
+.sticky-tot b{display:block;font-family:var(--mono);font-size:16px}
+.sticky-tot span{font-size:11px;color:var(--ink-3)}
+@media (max-width:560px){.sticky-tot .wrap{grid-template-columns:repeat(3,minmax(0,1fr))}.sticky-tot .wrap .btn{grid-column:1/-1}}
+.toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:14px;max-width:min(92vw,460px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.toast.bad{background:var(--bad);color:#fff}
+.lineitem{display:flex;flex-direction:column;gap:10px}
+.fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr))}
+.comp{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;background:var(--surface-2);color:var(--ink)}
+.comp[aria-pressed="false"]{text-decoration:line-through;color:var(--ink-3);background:transparent}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.scroll{overflow-x:auto}
+.cv h1{font-size:32px}
+.cvhead{background:var(--panel);color:var(--panel-ink);border-radius:16px;padding:26px}
+.cvhead .eyebrow{color:var(--accent)}
+.empty{text-align:center;padding:36px 18px;color:var(--ink-2)}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:900px){.hb{grid-template-columns:minmax(0,1fr)}.hb>aside{display:none}}
+aside .card{position:sticky;top:84px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><i></i>MEASURE PIXEL</div>
+  <nav class="tabs" aria-label="Sections">
+    <a href="#dashboard">Dashboard</a><a href="#new">New quote</a><a href="#quotes">Quotations</a><a href="#catalogue">Catalogue</a>
+  </nav>
+</div></header>
+<main class="wrap" id="app"></main>
+<div id="tot"></div>
+<div id="toast" hidden></div>
+
+<script id="board" type="application/json">{"links":[{"id":"be-found","name":"Be found"},{"id":"be-chosen","name":"Be chosen"},{"id":"capture-it","name":"Capture it"},{"id":"follow-up-retain","name":"Follow up & retain"},{"id":"measure","name":"Measure"}],"services":[{"id":"google-ads","name":"Google Ads","linkId":"be-found","opts":[{"id":"performance-management","label":"Performance marketing — management only","model":"monthly","monthlyFee":50000,"source":"brief-example"},{"id":"performance-management-video","label":"Performance marketing — management + video production","model":"monthly","monthlyFee":60000,"source":"brief-example"}]},{"id":"meta-ads","name":"Meta Ads","linkId":"be-found","opts":[{"id":"performance-management","label":"Performance marketing — management only","model":"monthly","monthlyFee":50000,"source":"brief-example"},{"id":"performance-management-video","label":"Performance marketing — management + video production","model":"monthly","monthlyFee":60000,"source":"brief-example"}]},{"id":"seo-local-search","name":"SEO & local search","linkId":"be-found","opts":[]},{"id":"google-business-profile","name":"Google Business Profile","linkId":"be-found","opts":[]},{"id":"reputation-reviews","name":"Reputation & reviews","linkId":"be-found","opts":[]},{"id":"social-media-management","name":"Social media management","linkId":"be-found","opts":[]},{"id":"influencer-ugc","name":"Influencer & UGC","linkId":"be-found","opts":[]},{"id":"linkedin-b2b-outbound","name":"LinkedIn & B2B outbound","linkId":"be-found","opts":[]},{"id":"youtube-channel-management","name":"YouTube channel management","linkId":"be-found","opts":[]},{"id":"video-production","name":"Video production","linkId":"be-chosen","opts":[{"id":"social-media-video","label":"Social media video","model":"per_unit","unitPrice":3500,"unitLabel":"video","source":"brief-example"},{"id":"youtube-marketing-video","label":"YouTube marketing video","model":"per_unit","unitPrice":5000,"unitLabel":"video","source":"brief-example"}]},{"id":"photography","name":"Photography","linkId":"be-chosen","opts":[]},{"id":"drone-aerial","name":"Drone & aerial","linkId":"be-chosen","opts":[]},{"id":"branding-design","name":"Branding & design","linkId":"be-chosen","opts":[]},{"id":"website-development","name":"Website development","linkId":"be-chosen","opts":[]},{"id":"landing-pages-funnels","name":"Landing pages & funnels","linkId":"be-chosen","opts":[]},{"id":"content-copywriting","name":"Content & copywriting","linkId":"be-chosen","opts":[]},{"id":"lead-forms","name":"Lead forms","linkId":"capture-it","opts":[]},{"id":"whatsapp-intake","name":"WhatsApp intake","linkId":"capture-it","opts":[]},{"id":"crm-setup","name":"CRM setup","linkId":"capture-it","opts":[]},{"id":"call-tracking","name":"Call tracking","linkId":"capture-it","opts":[]},{"id":"crm-sales-automation","name":"CRM & sales automation","linkId":"follow-up-retain","opts":[]},{"id":"whatsapp-automation","name":"WhatsApp automation","linkId":"follow-up-retain","opts":[]},{"id":"email-sms-automation","name":"Email & SMS automation","linkId":"follow-up-retain","opts":[]},{"id":"ai-business-automation","name":"AI business automation","linkId":"follow-up-retain","opts":[]},{"id":"lms-online-learning","name":"LMS & online learning","linkId":"follow-up-retain","opts":[]},{"id":"hosting-care-plans","name":"Hosting & care plans","linkId":"follow-up-retain","opts":[]},{"id":"corporate-training","name":"Corporate training","linkId":"follow-up-retain","opts":[]},{"id":"ga4-gtm","name":"GA4 & GTM","linkId":"measure","opts":[]},{"id":"conversion-tracking-capi","name":"Conversion tracking & CAPI","linkId":"measure","opts":[]},{"id":"dashboards-reporting","name":"Dashboards & reporting","linkId":"measure","opts":[]},{"id":"cro-ab-testing","name":"CRO & A/B testing","linkId":"measure","opts":[]},{"id":"strategy-consulting","name":"Strategy & consulting","linkId":"measure","opts":[]}],"clusters":[{"id":"healthcare","name":"Healthcare"},{"id":"education","name":"Education"},{"id":"property-build","name":"Property & build"},{"id":"money-b2b","name":"Money & B2B"},{"id":"consumer-local","name":"Consumer & local"}],"industries":[{"id":"hospitals","name":"Hospitals","clusterId":"healthcare"},{"id":"single-specialty-clinics","name":"Single-specialty clinics","clusterId":"healthcare"},{"id":"dental-clinics","name":"Dental clinics","clusterId":"healthcare"},{"id":"skin-hair-clinics","name":"Skin & hair clinics","clusterId":"healthcare"},{"id":"fertility-ivf-centres","name":"Fertility & IVF centres","clusterId":"healthcare"},{"id":"diagnostic-labs","name":"Diagnostic labs","clusterId":"healthcare"},{"id":"physiotherapy-rehab","name":"Physiotherapy & rehab","clusterId":"healthcare"},{"id":"senior-care-home-nursing","name":"Senior care & home nursing","clusterId":"healthcare"},{"id":"veterinary-pet-care","name":"Veterinary & pet care","clusterId":"healthcare"},{"id":"schools","name":"Schools","clusterId":"education"},{"id":"colleges","name":"Colleges","clusterId":"education"},{"id":"coaching-institutes","name":"Coaching institutes","clusterId":"education"},{"id":"study-abroad-consultants","name":"Study abroad consultants","clusterId":"education"},{"id":"preschools-daycare","name":"Preschools & daycare","clusterId":"education"},{"id":"test-prep-centres","name":"Test prep centres","clusterId":"education"},{"id":"arts-music-academies","name":"Arts & music academies","clusterId":"education"},{"id":"corporate-training-firms","name":"Corporate training firms","clusterId":"education"},{"id":"real-estate-developers","name":"Real estate developers","clusterId":"property-build"},{"id":"construction-firms","name":"Construction firms","clusterId":"property-build"},{"id":"interior-designers","name":"Interior designers","clusterId":"property-build"},{"id":"architects","name":"Architects","clusterId":"property-build"},{"id":"modular-kitchen-furniture","name":"Modular kitchen & furniture","clusterId":"property-build"},{"id":"resale-brokers","name":"Resale brokers","clusterId":"property-build"},{"id":"commercial-contractors","name":"Commercial contractors","clusterId":"property-build"},{"id":"co-working-spaces","name":"Co-working spaces","clusterId":"property-build"},{"id":"ca-cfo-firms","name":"CA & CFO firms","clusterId":"money-b2b"},{"id":"legal-firms","name":"Legal firms","clusterId":"money-b2b"},{"id":"business-consultants","name":"Business consultants","clusterId":"money-b2b"},{"id":"recruitment-agencies","name":"Recruitment agencies","clusterId":"money-b2b"},{"id":"insurance-advisors","name":"Insurance advisors","clusterId":"money-b2b"},{"id":"loan-consultants-dsas","name":"Loan consultants & DSAs","clusterId":"money-b2b"},{"id":"printing-packaging","name":"Printing & packaging","clusterId":"money-b2b"},{"id":"manufacturing-industrial","name":"Manufacturing & industrial","clusterId":"money-b2b"},{"id":"restaurants-cloud-kitchens","name":"Restaurants & cloud kitchens","clusterId":"consumer-local"},{"id":"hotels-resorts","name":"Hotels & resorts","clusterId":"consumer-local"},{"id":"travel-operators","name":"Travel operators","clusterId":"consumer-local"},{"id":"gyms-fitness-studios","name":"Gyms & fitness studios","clusterId":"consumer-local"},{"id":"salons-spas","name":"Salons & spas","clusterId":"consumer-local"},{"id":"jewellery-brands","name":"Jewellery brands","clusterId":"consumer-local"},{"id":"textile-saree-brands","name":"Textile & saree brands","clusterId":"consumer-local"},{"id":"automobile-dealers","name":"Automobile dealers","clusterId":"consumer-local"},{"id":"home-services","name":"Home services","clusterId":"consumer-local"},{"id":"solar-installers","name":"Solar installers","clusterId":"consumer-local"},{"id":"wedding-event-services","name":"Wedding & event services","clusterId":"consumer-local"}],"offers":[{"id":"clinic-patient-engine","n":1,"name":"Clinic Patient Engine","cl":"healthcare","aud":"Healthcare","q":"We get patients only by reference, and the new doctor has empty slots.","comp":["Google Ads","Landing page","WhatsApp intake","Conversion tracking"],"up":{"min":40000,"max":60000},"upInc":false,"upKind":"setup","mo":{"min":35000,"max":50000},"term":null,"sug":["single-specialty-clinics","dental-clinics","skin-hair-clinics","fertility-ivf-centres","physiotherapy-rehab"]},{"id":"specialty-launch-film","n":2,"name":"Specialty Launch Film","cl":"healthcare","aud":"Healthcare","q":"We opened a new department and nobody knows it exists.","comp":["Video production","Photography","Social media","Paid amplification"],"up":{"min":150000,"max":300000},"upInc":false,"upKind":"project","mo":{"min":20000,"max":30000},"term":null,"sug":["hospitals","single-specialty-clinics"]},{"id":"study-abroad-intake-system","n":3,"name":"Study Abroad Intake System","cl":"education","aud":"Education","q":"Enquiries come in, but the students end up going with someone else.","comp":["Meta Ads","Google Ads","CRM","WhatsApp automation"],"up":{"min":50000,"max":50000},"upInc":false,"upKind":"setup","mo":{"min":40000,"max":60000},"term":null,"sug":["study-abroad-consultants"]},{"id":"admissions-season-engine","n":4,"name":"Admissions Season Engine","cl":"education","aud":"Education","q":"Admissions were down this year and we don’t know why.","comp":["Video production","Meta Ads","WhatsApp automation","CRM"],"up":null,"upInc":true,"upKind":"setup","mo":{"min":50000,"max":75000},"term":6,"sug":["schools","colleges","preschools-daycare"]},{"id":"coaching-funnel-lms","n":5,"name":"Coaching Funnel & LMS","cl":"education","aud":"Education","q":"We want to sell our course online but we don’t know where to start.","comp":["Landing page & funnel","Meta Ads","LMS build","Email & SMS"],"up":{"min":75000,"max":75000},"upInc":false,"upKind":"setup","mo":{"min":35000,"max":50000},"term":null,"sug":["coaching-institutes","test-prep-centres","arts-music-academies","corporate-training-firms"]},{"id":"project-launch-package","n":6,"name":"Project Launch Package","cl":"property-build","aud":"Property & build","q":"We’re launching a new project next quarter.","comp":["Drone & aerial","Video","Landing page","Meta & Google Ads","CRM"],"up":{"min":200000,"max":400000},"upInc":false,"upKind":"project","mo":{"min":50000,"max":75000},"term":null,"sug":["real-estate-developers","construction-firms","commercial-contractors"]},{"id":"interior-enquiry-system","n":7,"name":"Interior Enquiry System","cl":"property-build","aud":"Property & build","q":"The leads we get are all price shoppers who never convert.","comp":["Video funnel","Meta Ads","Lead qualification","CRM follow-up"],"up":{"min":60000,"max":60000},"upInc":false,"upKind":"setup","mo":{"min":50000,"max":75000},"term":null,"sug":["interior-designers","modular-kitchen-furniture","architects"]},{"id":"professional-services-enquiry-desk","n":8,"name":"Professional Services Enquiry Desk","cl":"money-b2b","aud":"Money & B2B","q":"All our business comes from word of mouth.","comp":["Google Ads exact match","Landing page","Call tracking","Dashboard"],"up":{"min":25000,"max":25000},"upInc":false,"upKind":"setup","mo":{"min":25000,"max":35000},"term":null,"sug":["ca-cfo-firms","legal-firms","business-consultants","insurance-advisors","loan-consultants-dsas"]},{"id":"b2b-pipeline-build","n":9,"name":"B2B Pipeline Build","cl":"money-b2b","aud":"Money & B2B","q":"Our website gets traffic but no enquiries.","comp":["Website","Google Ads","LinkedIn outbound","CRM"],"up":{"min":100000,"max":100000},"upInc":false,"upKind":"setup","mo":{"min":40000,"max":60000},"term":null,"sug":["recruitment-agencies","printing-packaging","manufacturing-industrial","business-consultants"]},{"id":"local-domination-pack","n":10,"name":"Local Domination Pack","cl":"consumer-local","aud":"Consumer & local","q":"We’re not showing up on Google Maps.","comp":["Google Business Profile","Reviews","Local Google Ads","Call tracking"],"up":{"min":15000,"max":15000},"upInc":false,"upKind":"setup","mo":{"min":18000,"max":28000},"term":null,"sug":["restaurants-cloud-kitchens","gyms-fitness-studios","salons-spas","home-services","automobile-dealers"]},{"id":"solar-home-services-lead-engine","n":11,"name":"Solar & Home Services Lead Engine","cl":"consumer-local","aud":"Consumer & local","q":"We buy leads from a portal and most of them are junk.","comp":["Google Ads","Google Business Profile","Landing page","Call tracking"],"up":{"min":25000,"max":25000},"upInc":false,"upKind":"setup","mo":{"min":25000,"max":40000},"term":null,"sug":["solar-installers","home-services"]},{"id":"hospitality-visibility-pack","n":12,"name":"Hospitality Visibility Pack","cl":"consumer-local","aud":"Consumer & local","q":"Weekends are full, weekdays are empty.","comp":["Photography","Social media","Influencer & UGC","Google Business Profile"],"up":{"min":40000,"max":40000},"upInc":false,"upKind":"setup","mo":{"min":30000,"max":45000},"term":null,"sug":["hotels-resorts","restaurants-cloud-kitchens","travel-operators"]},{"id":"measurement-retainer","n":13,"name":"Measurement Retainer","cl":null,"aud":"Any industry — the wedge","q":"We spend on ads but we honestly don’t know what’s working.","comp":["GA4 & GTM","Conversion tracking & CAPI","Dashboards","Monthly review"],"up":{"min":30000,"max":30000},"upInc":false,"upKind":"setup","mo":{"min":15000,"max":25000},"term":null,"sug":[]},{"id":"ai-follow-up-layer","n":14,"name":"AI Follow-up Layer","cl":null,"aud":"Any industry — upsell","q":"We get enough enquiries. The team just doesn’t follow up.","comp":["AI business automation","WhatsApp automation","CRM","Email & SMS"],"up":{"min":60000,"max":60000},"upInc":false,"upKind":"setup","mo":{"min":25000,"max":40000},"term":null,"sug":[]}],"cats":[{"id":"brand-positioning","name":"Brand & Positioning"},{"id":"website-conversion","name":"Website & Conversion"},{"id":"content-creative","name":"Content & Creative"},{"id":"paid-advertising","name":"Paid Advertising"},{"id":"seo-visibility","name":"SEO & Online Visibility"},{"id":"lead-capture","name":"Lead Capture"},{"id":"sales-crm","name":"Sales & CRM"},{"id":"whatsapp-automation","name":"WhatsApp & Business Automation"},{"id":"analytics","name":"Analytics & Measurement"},{"id":"growth-strategy","name":"Growth Strategy"}],"items":[{"id":"bp-trust-signals","c":"brand-positioning","l":"Trust signals visible (testimonials, credentials, case studies)","p":"high","s":["reputation-reviews","content-copywriting","video-production"]},{"id":"wc-cta","c":"website-conversion","l":"Clear primary call to action on key pages","p":"high","s":["landing-pages-funnels","cro-ab-testing"]},{"id":"wc-landing-pages","c":"website-conversion","l":"Dedicated landing pages for campaigns or key services","p":"high","s":["landing-pages-funnels"]},{"id":"wc-conversion-rate","c":"website-conversion","l":"Website traffic turns into enquiries","p":"high","s":["cro-ab-testing","landing-pages-funnels"]},{"id":"cc-video","c":"content-creative","l":"Video content for the business and its services","p":"medium","s":["video-production"]},{"id":"cc-photography","c":"content-creative","l":"Professional photography of premises, team or work","p":"medium","s":["photography"]},{"id":"cc-social-active","c":"content-creative","l":"Active, consistent social media presence","p":"medium","s":["social-media-management"]},{"id":"cc-aerial","c":"content-creative","l":"Aerial / site footage where the product is a place","p":"low","s":["drone-aerial"]},{"id":"pa-google-ads","c":"paid-advertising","l":"Google Ads running for high-intent searches","p":"high","s":["google-ads"]},{"id":"pa-meta-ads","c":"paid-advertising","l":"Meta (Facebook / Instagram) ads running","p":"high","s":["meta-ads"]},{"id":"pa-linkedin","c":"paid-advertising","l":"LinkedIn advertising or outbound for B2B buyers","p":"low","s":["linkedin-b2b-outbound"]},{"id":"seo-gbp","c":"seo-visibility","l":"Google Business Profile claimed and optimised","p":"high","s":["google-business-profile"]},{"id":"seo-reviews","c":"seo-visibility","l":"Steady flow of Google reviews, with responses","p":"high","s":["reputation-reviews"]},{"id":"seo-ranking","c":"seo-visibility","l":"Ranks for core service + location searches","p":"high","s":["seo-local-search"]},{"id":"seo-influencer","c":"seo-visibility","l":"Creator, influencer or customer-generated content","p":"low","s":["influencer-ugc"]},{"id":"lc-whatsapp","c":"lead-capture","l":"WhatsApp click-to-chat available","p":"high","s":["whatsapp-intake"]},{"id":"lc-call-tracking","c":"lead-capture","l":"Calls tracked by source or campaign","p":"medium","s":["call-tracking"]},{"id":"lc-lead-quality","c":"lead-capture","l":"Leads qualified before they reach sales","p":"medium","s":["crm-sales-automation","whatsapp-automation"]},{"id":"crm-system","c":"sales-crm","l":"Leads stored in a CRM, not spreadsheets or chats","p":"high","s":["crm-setup"]},{"id":"crm-response-time","c":"sales-crm","l":"New enquiries answered within an hour","p":"high","s":["whatsapp-automation","ai-business-automation","crm-sales-automation"]},{"id":"crm-follow-up","c":"sales-crm","l":"Structured follow-up for leads that did not convert","p":"high","s":["crm-sales-automation","email-sms-automation","ai-business-automation"]},{"id":"wa-business-api","c":"whatsapp-automation","l":"WhatsApp Business account / API in use","p":"medium","s":["whatsapp-automation"]},{"id":"wa-auto-replies","c":"whatsapp-automation","l":"Automated replies, FAQs and routing","p":"medium","s":["whatsapp-automation","ai-business-automation"]},{"id":"wa-ai-handling","c":"whatsapp-automation","l":"AI handles repetitive enquiries and tasks","p":"low","s":["ai-business-automation"]},{"id":"an-ga4","c":"analytics","l":"GA4 analytics installed","p":"high","s":["ga4-gtm"]},{"id":"an-conversions","c":"analytics","l":"Conversions (forms, calls, WhatsApp) tracked as events","p":"high","s":["conversion-tracking-capi"]},{"id":"an-capi","c":"analytics","l":"Server-side / Conversions API for ad platforms","p":"medium","s":["conversion-tracking-capi"]},{"id":"an-dashboard","c":"analytics","l":"One dashboard showing cost per lead by source","p":"high","s":["dashboards-reporting"]},{"id":"an-attribution","c":"analytics","l":"Knows which channels produce customers, not just leads","p":"high","s":["dashboards-reporting","strategy-consulting"]},{"id":"gs-online-learning","c":"growth-strategy","l":"Online course or learning product (if relevant)","p":"low","s":["lms-online-learning"]}],"rules":[{"o":"clinic-patient-engine","min":6,"out":"A steady flow of new-patient enquiries from search, captured on WhatsApp and attributed to source.","t":[["a","pa-google-ads","g",3],["a","wc-landing-pages","g",2],["a","wc-conversion-rate","g",2],["a","lc-whatsapp","g",2],["a","an-conversions","g",3],["g","more-enquiries","",2],["g","fill-capacity","",2]]},{"o":"specialty-launch-film","min":6,"out":"Awareness for a new department or specialty, with content that keeps working after launch.","t":[["a","cc-video","g",3],["a","cc-photography","g",2],["a","cc-social-active","g",2],["a","bp-trust-signals","g",1],["g","launch-new","",4],["g","brand-awareness","",2]]},{"o":"study-abroad-intake-system","min":6,"out":"More enquiries converted into enrolled students through fast, structured follow-up.","t":[["a","crm-system","g",3],["a","crm-follow-up","g",3],["a","crm-response-time","g",2],["a","pa-meta-ads","g",2],["a","pa-google-ads","g",1],["a","wa-business-api","g",1],["g","better-lead-quality","",2],["g","improve-follow-up","",2],["g","more-enquiries","",1]]},{"o":"admissions-season-engine","min":6,"out":"A measured admissions season: video-led demand, WhatsApp follow-up and a CRM view of every applicant.","t":[["a","cc-video","g",2],["a","pa-meta-ads","g",3],["a","crm-system","g",2],["a","wa-auto-replies","g",2],["a","an-attribution","g",2],["g","more-enquiries","",2],["g","know-whats-working","",2]]},{"o":"coaching-funnel-lms","min":6,"out":"A working online sales funnel for a course, delivered through an LMS with automated nurture.","t":[["a","gs-online-learning","g",4],["a","wc-landing-pages","g",2],["a","pa-meta-ads","g",2],["a","crm-follow-up","g",1],["g","sell-online","",4]]},{"o":"project-launch-package","min":6,"out":"A launch with aerial and video assets, a dedicated landing page, paid demand and CRM-tracked site visits.","t":[["a","cc-aerial","g",2],["a","cc-video","g",2],["a","wc-landing-pages","g",2],["a","pa-meta-ads","g",2],["a","pa-google-ads","g",2],["a","crm-system","g",2],["g","launch-new","",4]]},{"o":"interior-enquiry-system","min":6,"out":"Fewer price shoppers: video pre-qualifies buyers and CRM follow-up works the serious ones.","t":[["a","lc-lead-quality","g",4],["a","crm-follow-up","g",3],["a","cc-video","g",2],["a","pa-meta-ads","g",1],["g","better-lead-quality","",3]]},{"o":"professional-services-enquiry-desk","min":6,"out":"Enquiries beyond word of mouth from exact-match search, with every call tracked.","t":[["a","pa-google-ads","g",3],["a","wc-landing-pages","g",2],["a","lc-call-tracking","g",2],["a","an-dashboard","g",2],["a","seo-ranking","g",1],["g","more-enquiries","",2]]},{"o":"b2b-pipeline-build","min":6,"out":"Website traffic and outbound turned into a CRM-managed B2B pipeline.","t":[["a","wc-conversion-rate","g",4],["a","wc-cta","g",2],["a","pa-linkedin","g",2],["a","crm-system","g",2],["a","pa-google-ads","g",1],["g","b2b-pipeline","",4],["g","more-enquiries","",1]]},{"o":"local-domination-pack","min":6,"out":"Visible on Google Maps and local search, with reviews and calls that can be counted.","t":[["a","seo-gbp","g",4],["a","seo-reviews","g",3],["a","seo-ranking","g",2],["a","lc-call-tracking","g",1],["g","local-visibility","",4]]},{"o":"solar-home-services-lead-engine","min":6,"out":"Own lead flow from search and Maps instead of shared portal leads.","t":[["a","lc-lead-quality","g",3],["a","pa-google-ads","g",2],["a","seo-gbp","g",2],["a","wc-landing-pages","g",1],["a","lc-call-tracking","g",2],["g","better-lead-quality","",3],["g","more-enquiries","",1]]},{"o":"hospitality-visibility-pack","min":6,"out":"Weekday demand from fresh visuals, social, creators and a strong Maps listing.","t":[["a","cc-photography","g",2],["a","cc-social-active","g",2],["a","seo-gbp","g",2],["a","seo-influencer","g",2],["g","fill-capacity","",4],["g","brand-awareness","",2]]},{"o":"measurement-retainer","min":6,"out":"Every enquiry attributed to its source, reported in one dashboard and reviewed monthly.","t":[["a","an-ga4","g",3],["a","an-conversions","g",4],["a","an-capi","g",2],["a","an-dashboard","g",3],["a","an-attribution","g",3],["a","pa-google-ads","w",2],["a","pa-meta-ads","w",2],["g","know-whats-working","",4]]},{"o":"ai-follow-up-layer","min":6,"out":"Every enquiry answered and followed up automatically, across WhatsApp, email and SMS.","t":[["a","crm-response-time","g",4],["a","crm-follow-up","g",4],["a","wa-auto-replies","g",2],["a","wa-ai-handling","g",2],["g","improve-follow-up","",4]]}],"goals":[{"id":"more-enquiries","label":"More enquiries"},{"id":"better-lead-quality","label":"Better lead quality"},{"id":"launch-new","label":"Launch something new"},{"id":"sell-online","label":"Sell a course or product online"},{"id":"improve-follow-up","label":"Follow up faster and better"},{"id":"know-whats-working","label":"Know what's working"},{"id":"local-visibility","label":"Show up locally / on Maps"},{"id":"brand-awareness","label":"Brand awareness"},{"id":"fill-capacity","label":"Fill empty slots or weekdays"},{"id":"b2b-pipeline","label":"Build a B2B pipeline"}],"routes":[{"id":"route-12x25","clients":12,"monthlyEach":25000,"label":"at ₹25K each","description":"Local packs and measurement retainers. Fastest to close, most to manage."},{"id":"route-10x30","clients":10,"monthlyEach":30000,"label":"at ₹30K each","description":"The stated profit floor. Ten clients is a real delivery load."},{"id":"route-6x50","clients":6,"monthlyEach":50000,"label":"at ₹50K each","description":"Clinics, interiors, study abroad. The realistic middle."},{"id":"route-4x75","clients":4,"monthlyEach":75000,"label":"at ₹75K each","description":"Developers, hospital groups, school groups. Slow to close."},{"id":"route-5x60","clients":5,"monthlyEach":60000,"label":"at ₹60K average","description":"Two anchors plus three cash-tier clients. The likely shape."}],"cash":["Dental & skin clinics","CA & CFO firms","Study abroad","Coaching institutes","Solar installers","Home services","Anyone already running ads"]}</script>
+<script>
+(() => {
+const B = JSON.parse(document.getElementById("board").textContent);
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const inr = (n) => "₹" + Math.round(n || 0).toLocaleString("en-IN");
+const band = (b) => { if (!b) return "—"; const f = (r) => r >= 100000 ? (r / 100000).toString().replace(/\.0$/, "") + "L" : (r / 1000) + "K"; return b.min === b.max ? "₹" + f(b.min) : "₹" + f(b.min) + "–" + f(b.max); };
+const uid = () => Math.random().toString(36).slice(2, 10);
+const today = () => new Date().toISOString().slice(0, 10);
+const addDays = (d, n) => { const x = new Date(d + "T00:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+const svc = Object.fromEntries(B.services.map((s) => [s.id, s]));
+const offerById = Object.fromEntries(B.offers.map((o) => [o.id, o]));
+const ind = Object.fromEntries(B.industries.map((i) => [i.id, i]));
+const linkName = Object.fromEntries(B.links.map((l) => [l.id, l.name]));
+const STATUS = [["ww", "Working"], ["ni", "Improve"], ["mi", "Missing"], ["na", "N/A"]];
+const VALID_DAYS = 15;
+
+// ---------------- persistence ----------------
+let db = null, canWrite = true, quotes = [], cfg = { target: 300000, starting: 25000, startingClients: 1, gst: 18 };
+let ready = false;
+
+function toast(msg, bad) {
+  const t = $("#toast"); t.className = "toast" + (bad ? " bad" : ""); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), bad ? 7000 : 3500);
+}
+
+async function connect() {
+  try {
+    db = await window.claude?.use?.("db");
+  } catch { db = null; }
+  if (!db) { ready = true; route(); return; }
+  try {
+    const user = await window.claude.use("user");
+    const can = user ? await user.can("data.write") : null;
+    if (can === false) canWrite = false;
+  } catch {}
+  db.collection("quotes").onSnapshot((snap) => {
+    quotes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    ready = true; route(true);
+  }, () => { ready = true; route(); });
+  db.doc("config/main").onSnapshot((d) => { if (d.exists) cfg = { ...cfg, ...d.data() }; if (ready) route(true); });
+}
+
+async function saveQuote(q) {
+  if (!db) throw new Error("Saving needs this page opened in Claude while signed in.");
+  const { id, ...body } = q;
+  await db.collection("quotes").doc(id).set(JSON.parse(JSON.stringify(body)));
+}
+
+// ---------------- builder state ----------------
+const blank = () => ({
+  client: { name: "", website: "", contact: "", phone: "", email: "", industry: "" },
+  audit: {}, goals: [], pains: [], items: [], discount: 0, discountReason: "", gstOn: true, contract: "", billing: "monthly",
+  needs: "", terms: "One-time and setup fees: 100% before work starts. Monthly fees billed in advance. Ad spend is paid by the client directly to the platforms.", internal: "",
+});
+let draft = load() || blank();
+let editing = null; // {id, number, version} when editing a saved draft
+function load() { try { return JSON.parse(localStorage.getItem("mp-draft") || "null"); } catch { return null; } }
+function persistDraft() { try { localStorage.setItem("mp-draft", JSON.stringify(draft)); localStorage.setItem("mp-editing", JSON.stringify(editing)); } catch {} }
+try { editing = JSON.parse(localStorage.getItem("mp-editing") || "null"); } catch {}
+
+// ---------------- engines ----------------
+function recommend(d) {
+  const i = ind[d.client.industry];
+  const gap = (id) => d.audit[id] === "mi" || d.audit[id] === "ni";
+  const out = [];
+  for (const r of B.rules) {
+    const o = offerById[r.o];
+    let fit = "any";
+    if (o.cl) { if (!i) fit = "cluster"; else if (o.sug.includes(i.id)) fit = "suggested"; else if (o.cl === i.clusterId) fit = "cluster"; else continue; }
+    let score = 0; const probs = []; const goals = [];
+    for (const [k, id, mode, w] of r.t) {
+      if (k === "a") {
+        if (mode === "g" && gap(id)) { score += w; probs.push(id); }
+        if (mode === "w" && d.audit[id] === "ww") score += w;
+      } else if (d.goals.includes(id)) { score += w; goals.push(id); }
+    }
+    const said = d.pains.includes(o.id);
+    if (said) score += 4;
+    if (fit === "suggested") score += 2;
+    if (!probs.length && !said) continue;
+    out.push({ o, r, score, probs, goals, said, fit, ok: score >= r.min });
+  }
+  out.sort((a, b) => b.score - a.score);
+  const top = out.filter((x) => x.ok).slice(0, 3);
+  return { top, other: out.filter((x) => !top.includes(x)) };
+}
+
+function totals(q) {
+  let one = 0, mon = 0, optOne = 0, optMon = 0;
+  for (const it of q.items) {
+    const o = it.qty * ((it.model === "setup_monthly" ? it.setup : 0) + (it.model === "per_unit" || it.model === "one_time" ? it.price : 0));
+    const m = it.qty * (it.model === "setup_monthly" || it.model === "monthly" ? it.monthly : 0);
+    if (it.optional) { optOne += o; optMon += m; } else { one += o; mon += m; }
+  }
+  const dp = Math.min(Math.max(+q.discount || 0, 0), 100) / 100;
+  const dOne = Math.round(one * dp), dMon = Math.round(mon * dp);
+  const oneNet = one - dOne, monNet = mon - dMon;
+  const rate = q.gstOn ? (cfg.gst ?? 18) / 100 : 0;
+  const tOne = Math.round(oneNet * rate), tMon = Math.round(monNet * rate);
+  const period = q.billing === "quarterly" ? 3 : 1;
+  const firstRec = q.items.filter((x) => !x.optional).reduce((s, x) => s + x.qty * (x.model === "setup_monthly" || x.model === "monthly" ? x.monthly : 0) * Math.min(period, x.term || period), 0) * (1 - dp);
+  const initial = oneNet + tOne + Math.round(firstRec * (1 + rate));
+  const cm = +q.contract || 0;
+  const contract = cm ? oneNet + Math.round(q.items.filter((x) => !x.optional).reduce((s, x) => s + x.qty * (x.model === "setup_monthly" || x.model === "monthly" ? x.monthly : 0) * Math.min(cm, x.term || cm), 0) * (1 - dp)) : null;
+  const unpriced = q.items.filter((x) => !x.optional && lineAmount(x).one + lineAmount(x).mon === 0 && !(x.kind === "offer" && x.upInc && x.monthly)).map((x) => x.name);
+  return { one, mon, dOne, dMon, oneNet, monNet, tOne, tMon, oneTotal: oneNet + tOne, monTotal: monNet + tMon, optOne, optMon, initial, contract, unpriced, rate };
+}
+function lineAmount(it) {
+  return {
+    one: it.qty * ((it.model === "setup_monthly" ? it.setup : 0) + (it.model === "per_unit" || it.model === "one_time" ? it.price : 0)),
+    mon: it.qty * (it.model === "setup_monthly" || it.model === "monthly" ? it.monthly : 0),
+  };
+}
+
+function offerLine(o) {
+  return { id: uid(), kind: "offer", ref: o.id, name: o.name, model: "setup_monthly", qty: 1, unit: "package", price: 0,
+    setup: o.upInc ? 0 : (o.up?.min ?? 0), upLabel: o.upKind === "project" ? "Project" : "Setup", upInc: o.upInc, monthly: o.mo?.min ?? 0, term: o.term,
+    bandUp: o.up, bandMo: o.mo, comps: o.comp.map((l) => ({ l, on: true })), optional: false, note: "" };
+}
+function serviceLine(s, opt) {
+  const base = { id: uid(), kind: "service", ref: s.id, name: s.name, qty: 1, unit: "", price: 0, setup: 0, monthly: 0, term: null, optional: false, note: "", comps: [], example: false };
+  if (!opt) return { ...base, model: "one_time" };
+  if (opt.model === "per_unit") return { ...base, name: s.name + " — " + opt.label, model: "per_unit", price: opt.unitPrice, unit: opt.unitLabel, example: true };
+  return { ...base, name: s.name + " — " + opt.label, model: "monthly", monthly: opt.monthlyFee, example: true };
+}
+
+// ---------------- views ----------------
+function route(fromData) {
+  const h = (location.hash || "#dashboard").slice(1);
+  const [view, arg] = h.split("-q-");
+  document.querySelectorAll("nav.tabs a").forEach((a) => a.setAttribute("aria-current", a.getAttribute("href") === "#" + (view === "quote" ? "quotes" : view) ? "page" : "false"));
+  $("#tot").innerHTML = "";
+  if (fromData && view === "new") return renderTotalsBar(); // keep focus while typing
+  if (view === "new") renderBuilder();
+  else if (view === "quotes") renderQuotes();
+  else if (view === "quote") renderQuote(arg);
+  else if (view === "catalogue") renderCatalogue();
+  else renderDashboard();
+}
+window.addEventListener("hashchange", () => { route(); scrollTo(0, 0); });
+
+function banner() {
+  if (!ready) return `<div class="card sub">Loading saved quotations…</div>`;
+  if (!db) return `<div class="card sub">Saved quotations are stored with this page on claude.ai. Open it in Claude while signed in to save and see them here. You can still build and price a quotation now.</div>`;
+  if (!canWrite) return `<div class="card sub">You can view quotations here but not save them. Ask the owner for edit access.</div>`;
+  return "";
+}
+
+// ---- dashboard
+function latestBy(fn) {
+  const m = new Map();
+  for (const q of quotes) { if (!fn(q)) continue; const c = m.get(q.number); if (!c || q.version > c.version) m.set(q.number, q); }
+  return m;
+}
+function effStatus(q) { return (q.status === "sent") && q.validUntil && q.validUntil < today() ? "expired" : q.status; }
+function renderDashboard() {
+  const accepted = latestBy((q) => q.status === "accepted");
+  const issued = latestBy((q) => q.status !== "draft");
+  const signedQ = [...accepted.values()];
+  const signed = cfg.starting + signedQ.reduce((s, q) => s + q.totals.monNet, 0);
+  const open = [...issued.values()].filter((q) => effStatus(q) === "sent" && !accepted.has(q.number));
+  const lost = [...issued.values()].filter((q) => q.status === "rejected" && !accepted.has(q.number)).length;
+  const expired = [...issued.values()].filter((q) => effStatus(q) === "expired" && !accepted.has(q.number)).length;
+  const clients = cfg.startingClients + new Set(signedQ.filter((q) => q.totals.monNet > 0).map((q) => q.client.name.toLowerCase())).size;
+  const gap = Math.max(0, cfg.target - signed);
+  const pct = Math.min(1, signed / cfg.target);
+  const days = Math.ceil((new Date("2027-01-23T00:00:00") - new Date()) / 864e5);
+  const byOffer = {};
+  for (const q of signedQ) { const ratio = q.totals.mon ? q.totals.monNet / q.totals.mon : 1; for (const it of q.items) if (it.kind === "offer" && !it.optional) byOffer[it.name] = (byOffer[it.name] || 0) + it.qty * it.monthly * ratio; }
+  const byInd = {};
+  for (const q of signedQ) { const n = ind[q.client.industry]?.name || "Unclassified"; byInd[n] = (byInd[n] || 0) + q.totals.monNet; }
+  const bars = (obj, empty) => { const e = Object.entries(obj).sort((a, b) => b[1] - a[1]); if (!e.length) return `<p class="muted">${empty}</p>`; const max = Math.max(...e.map((x) => x[1])); return e.map(([k, v]) => `<div title="${esc(k)}: ${inr(v)}/mo"><div class="kv"><span>${esc(k)}</span><span class="num muted">${inr(v)}/mo</span></div><div class="bar"><i style="width:${(v / max) * 100}%"></i></div></div>`).join(""); };
+  $("#app").innerHTML = `<div class="stack">
+    ${banner()}
+    <div><p class="eyebrow">Revenue</p><h1>Recurring revenue</h1><p class="sub">Target ${inr(cfg.target)}/month by 23 January 2027${days > 0 ? ` · ${days} days left` : ""}. Signed counts accepted quotations only, after discount, before GST.</p></div>
+    <section class="panel stack">
+      <p class="eyebrow" style="color:var(--accent)">Signed recurring revenue</p>
+      <p class="num" style="font-size:clamp(34px,8vw,52px);font-weight:600;line-height:1">${inr(signed)}<span style="font-size:18px;opacity:.55">/mo</span></p>
+      <div class="bar" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="Progress to target"><i style="width:${Math.max(1, pct * 100)}%"></i></div>
+      <div class="row between" style="font-size:13px;opacity:.75"><span>${Math.round(pct * 100)}% of target · includes ${inr(cfg.starting)} starting position</span><span>Gap <b class="num">${inr(gap)}</b>/mo</span></div>
+    </section>
+    <div class="grid g4">
+      ${tile("Active recurring clients", clients)}${tile("Average per client", inr(clients ? signed / clients : 0) + "/mo")}
+      ${tile("Pipeline — recurring", inr(open.reduce((s, q) => s + q.totals.monNet, 0)) + "/mo", open.length + " open, not signed")}
+      ${tile("Pipeline — one-time", inr(open.reduce((s, q) => s + q.totals.oneNet, 0)))}
+      ${tile("Signed one-time / setup", inr(signedQ.reduce((s, q) => s + q.totals.oneNet, 0)))}
+      ${tile("Won", accepted.size)}${tile("Lost", lost)}${tile("Expired", expired, "Sent, past " + VALID_DAYS + " days")}
+    </div>
+    <div class="grid g2">
+      <section class="card stack"><h2>Signed by packaged offer</h2>${bars(byOffer, "No accepted offers yet.")}</section>
+      <section class="card stack"><h2>Signed by industry</h2>${bars(byInd, "No accepted quotations yet.")}</section>
+    </div>
+    <section class="stack"><p class="eyebrow">Five routes to the target — clients still needed at each price</p>
+      <div class="grid g4">${B.routes.map((r) => `<div class="card"><p class="num" style="font-size:24px;font-weight:600">${r.clients}</p><p style="font-weight:600;font-size:14px">${esc(r.label)}</p><p class="sub" style="font-size:13px">${esc(r.description)}</p><p style="font-size:13px;margin-top:6px">Gap needs <b class="num">${Math.ceil(gap / r.monthlyEach)}</b> more</p></div>`).join("")}</div>
+    </section>
+    <section class="card stack"><div class="row between"><h2>Targets</h2><span class="sub">Shared with everyone using this page</span></div>
+      <div class="fields">
+        <label class="f">Monthly target (₹)<input id="cfg-target" inputmode="numeric" value="${cfg.target}"></label>
+        <label class="f">Starting signed (₹/mo)<input id="cfg-starting" inputmode="numeric" value="${cfg.starting}"></label>
+        <label class="f">Clients behind it<input id="cfg-clients" inputmode="numeric" value="${cfg.startingClients}"></label>
+        <label class="f">GST %<input id="cfg-gst" inputmode="decimal" value="${cfg.gst}"></label>
+      </div>
+      <div><button class="btn sec" id="cfg-save" ${db && canWrite ? "" : "disabled"}>Save targets</button></div>
+    </section>
+  </div>`;
+  $("#cfg-save").onclick = async () => {
+    const v = (id) => Math.max(0, Number($(id).value.replace(/[^\d.]/g, "")) || 0);
+    try { await db.doc("config/main").set({ target: v("#cfg-target"), starting: v("#cfg-starting"), startingClients: v("#cfg-clients"), gst: Math.min(50, v("#cfg-gst")) }); toast("Targets saved"); }
+    catch (e) { toast("Not saved: " + (e.message || e.code), true); }
+  };
+}
+function tile(label, value, note) { return `<div class="card"><p class="sub" style="font-size:12px">${esc(label)}</p><p class="num" style="font-size:21px;font-weight:600;margin-top:2px">${esc(value)}</p>${note ? `<p class="muted" style="font-size:12px">${esc(note)}</p>` : ""}</div>`; }
+
+// ---- builder
+function renderBuilder() {
+  const d = draft;
+  const rec = recommend(d);
+  const i = ind[d.client.industry];
+  const assessed = Object.keys(d.audit).length;
+  const pains = B.offers.filter((o) => !i || !o.cl || o.cl === i.clusterId);
+  $("#app").innerHTML = `<div class="hb"><div class="stack">
+    ${banner()}
+    <div class="row between"><div><p class="eyebrow">${editing ? `Editing ${esc(editing.number)} v${editing.version} draft` : "New quotation"}</p><h1>Understand the business. Find the growth opportunity.</h1></div>
+      <button class="btn ghost sm" data-act="reset">Start over</button></div>
+
+    <section class="card stack"><h2>1 · Business</h2>
+      <div class="fields">
+        <label class="f">Business name<input data-f="client.name" value="${esc(d.client.name)}" autocomplete="organization"></label>
+        <label class="f">Website<input data-f="client.website" value="${esc(d.client.website)}" inputmode="url" placeholder="example.com"></label>
+        <label class="f">Industry<select data-f="client.industry" data-re="1"><option value="">Select…</option>${B.clusters.map((c) => `<optgroup label="${esc(c.name)}">${B.industries.filter((x) => x.clusterId === c.id).map((x) => `<option value="${x.id}" ${x.id === d.client.industry ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</optgroup>`).join("")}</select></label>
+        <label class="f">Contact person<input data-f="client.contact" value="${esc(d.client.contact)}"></label>
+        <label class="f">Phone<input data-f="client.phone" value="${esc(d.client.phone)}" inputmode="tel"></label>
+        <label class="f">Email<input data-f="client.email" value="${esc(d.client.email)}" inputmode="email"></label>
+      </div>
+      <div class="stack" style="gap:8px"><p class="eyebrow">Goals</p><div class="row">${B.goals.map((g) => `<button class="chip" data-act="goal" data-id="${g.id}" aria-pressed="${d.goals.includes(g.id)}">${esc(g.label)}</button>`).join("")}</div></div>
+      <div class="stack" style="gap:8px"><p class="eyebrow">Does any of this sound like them?</p>${pains.map((o) => `<button class="quote" data-act="pain" data-id="${o.id}" aria-pressed="${d.pains.includes(o.id)}">“${esc(o.q)}”</button>`).join("")}</div>
+    </section>
+
+    <section class="stack"><div class="row between"><h2>2 · Quick audit</h2><span class="sub num">${assessed}/${B.items.length} assessed</span></div>
+      ${B.cats.map((c) => { const its = B.items.filter((x) => x.c === c.id); const gaps = its.filter((x) => d.audit[x.id] === "mi" || d.audit[x.id] === "ni").length; return `<details class="cat" ${its.some((x) => d.audit[x.id]) ? "open" : ""}><summary><span><b>${esc(c.name)}</b><br><span class="sub" style="font-size:13px">${its.filter((x) => d.audit[x.id]).length}/${its.length} assessed${gaps ? ` · ${gaps} gap${gaps > 1 ? "s" : ""}` : ""}</span></span><span class="muted">⌄</span></summary>
+        ${its.map((x) => `<div class="item"><div class="row between"><span style="font-weight:500">${esc(x.l)}</span>${x.p === "high" ? `<span class="pill bad">High</span>` : ""}</div><div class="row" role="radiogroup" aria-label="${esc(x.l)}">${STATUS.map(([k, l]) => `<button class="chip ${k}" role="radio" data-act="aud" data-id="${x.id}" data-v="${k}" aria-pressed="${d.audit[x.id] === k}" aria-checked="${d.audit[x.id] === k}">${l}</button>`).join("")}</div></div>`).join("")}
+      </details>`; }).join("")}
+    </section>
+
+    <section class="stack"><h2>3 · Recommended</h2>
+      ${rec.top.length ? rec.top.map((x) => recCard(x, true)).join("") : `<div class="card empty">Mark gaps in the audit or tap a buyer quote the client recognised. Recommendations come from findings, not industry alone.</div>`}
+      ${rec.other.length ? `<details><summary class="sub" style="cursor:pointer">${rec.other.length} weaker match${rec.other.length > 1 ? "es" : ""}</summary><div class="stack" style="margin-top:10px">${rec.other.map((x) => recCard(x)).join("")}</div></details>` : ""}
+      ${supporting(d, rec)}
+    </section>
+
+    <section class="stack"><div class="row between"><h2>4 · Quotation</h2><div class="row"><select id="add-pick" aria-label="Add from catalogue" style="max-width:280px"><option value="">Add offer or service…</option><optgroup label="Packaged offers">${B.offers.map((o) => `<option value="o:${o.id}">${o.n}. ${esc(o.name)}</option>`).join("")}</optgroup>${B.links.map((l) => `<optgroup label="${esc(l.name)}">${B.services.filter((s) => s.linkId === l.id).flatMap((s) => s.opts.length ? s.opts.map((op) => `<option value="s:${s.id}:${op.id}">${esc(s.name)} — ${esc(op.label)}</option>`).concat(`<option value="s:${s.id}:">${esc(s.name)} — custom price</option>`) : [`<option value="s:${s.id}:">${esc(s.name)}</option>`]).join("")}</optgroup>`).join("")}<option value="c">Custom line item</option></select></div></div>
+      ${d.items.length ? d.items.map(itemCard).join("") : `<div class="card empty">Nothing in the quotation yet. Add a recommended offer above or pick from the catalogue.</div>`}
+      <div class="card stack">
+        <div class="fields">
+          <label class="f">Discount %<input data-f="discount" data-num="1" inputmode="decimal" value="${d.discount || ""}"></label>
+          <label class="f">Discount reason<input data-f="discountReason" value="${esc(d.discountReason)}" placeholder="e.g. BNI member rate"></label>
+          <label class="f">Contract (months)<input data-f="contract" data-num="1" inputmode="numeric" value="${d.contract || ""}" placeholder="Not agreed"></label>
+          <label class="f">Billing<select data-f="billing" data-re="1"><option value="monthly" ${d.billing === "monthly" ? "selected" : ""}>Monthly</option><option value="quarterly" ${d.billing === "quarterly" ? "selected" : ""}>Quarterly</option></select></label>
+        </div>
+        <label class="row" style="font-size:14px;gap:8px"><input type="checkbox" data-f="gstOn" ${d.gstOn ? "checked" : ""} style="width:18px;min-height:18px"> Apply GST ${cfg.gst}%</label>
+        <label class="f">Summary of business needs (client sees this)<textarea data-f="needs">${esc(d.needs)}</textarea></label>
+        <label class="f">Terms (client sees this)<textarea data-f="terms">${esc(d.terms)}</textarea></label>
+        <label class="f">Internal notes (never shown to the client)<textarea data-f="internal">${esc(d.internal)}</textarea></label>
+      </div>
+    </section>
+  </div>
+  <aside><div class="card" id="side-tot"></div></aside></div>`;
+  renderTotalsBar();
+  $("#add-pick").onchange = (e) => {
+    const v = e.target.value; if (!v) return;
+    if (v === "c") draft.items.push({ ...serviceLine({ id: "custom", name: "Custom item" }), kind: "custom", ref: null });
+    else if (v.startsWith("o:")) draft.items.push(offerLine(offerById[v.slice(2)]));
+    else { const [, sid, oid] = v.split(":"); const s = svc[sid]; draft.items.push(serviceLine(s, s.opts.find((o) => o.id === oid))); }
+    changed(true); toast("Added to the quotation");
+  };
+}
+
+function recCard(x, primary) {
+  const o = x.o; const inCart = draft.items.some((it) => it.ref === o.id);
+  const probs = x.probs.map((id) => B.items.find((i) => i.id === id)).filter(Boolean);
+  return `<article class="card stack" style="gap:10px">
+    <div class="row between"><div class="row" style="gap:6px">${primary ? `<span class="pill ${x.score >= x.r.min + 6 ? "bad" : "warn"}">${x.score >= x.r.min + 6 ? "High" : "Medium"} priority</span>` : `<span class="pill">Weaker evidence</span>`}${x.said ? `<span class="pill lime">Client said it</span>` : ""}${x.fit === "suggested" ? `<span class="pill info">Industry fit</span>` : x.fit === "any" ? `<span class="pill">Any industry</span>` : ""}</div><span class="num muted" style="font-size:12px">score ${x.score}</span></div>
+    <h3 style="font-size:18px">${esc(o.name)}</h3>
+    ${probs.length ? `<div><p class="eyebrow">Observed problem</p><ul style="margin:4px 0 0;padding-left:18px">${probs.map((p) => `<li>${esc(p.l)} — ${draft.audit[p.id] === "mi" ? "missing" : "needs improvement"}</li>`).join("")}</ul></div>` : ""}
+    ${x.said ? `<p class="sub">The client said: “${esc(o.q)}”</p>` : ""}
+    <div><p class="eyebrow">Expected outcome</p><p>${esc(x.r.out)}</p></div>
+    <div class="row" style="gap:6px">${o.comp.map((c) => `<span class="comp">${esc(c)}</span>`).join("")}</div>
+    <div class="row between" style="border-top:1px solid var(--line);padding-top:10px">
+      <span class="num" style="font-size:14px">${o.upKind === "project" ? "Project" : "Setup"} ${o.upInc ? "included" : band(o.up)} · Monthly${o.term ? " × " + o.term : ""} ${band(o.mo)}</span>
+      <button class="btn sm ${inCart ? "sec" : ""}" data-act="addoffer" data-id="${o.id}">${inCart ? "Added ✓ add again" : "Add to quotation"}</button>
+    </div></article>`;
+}
+
+function supporting(d, rec) {
+  const covered = new Set(rec.top.flatMap((x) => x.o.comp));
+  const inPlace = new Set(); const need = new Map();
+  for (const it of B.items) { const s = d.audit[it.id]; for (const sid of it.s) { if (s === "ww") inPlace.add(sid); if (s === "mi" || s === "ni") need.set(sid, [...(need.get(sid) || []), it.l]); } }
+  const offerSvcNames = new Set(rec.top.flatMap((x) => x.o.comp.map((c) => c.toLowerCase())));
+  const sup = [...need.entries()].filter(([sid]) => !inPlace.has(sid) && !offerSvcNames.has(svc[sid].name.toLowerCase()));
+  void covered;
+  return `${sup.length ? `<div class="card stack" style="gap:8px"><h3>Supporting services for remaining gaps</h3>${sup.slice(0, 8).map(([sid, why]) => `<div class="row between" style="border-top:1px solid var(--line);padding-top:8px"><div style="min-width:0;flex:1"><b>${esc(svc[sid].name)}</b> <span class="pill">${esc(linkName[svc[sid].linkId])}</span><p class="sub" style="font-size:13px">${esc(why.join("; "))}</p></div><button class="btn sm sec" data-act="addsvc" data-id="${sid}">Add</button></div>`).join("")}</div>` : ""}
+  ${inPlace.size ? `<div class="card"><h3>Already in place — don't sell</h3><p class="sub" style="margin-top:6px">${[...inPlace].map((s) => esc(svc[s].name)).join(" · ")}</p></div>` : ""}`;
+}
+
+function itemCard(it, idx) {
+  const a = lineAmount(it);
+  const out = (v, b) => b && (v < b.min || v > b.max);
+  const fld = (label, key, val, hint, bandObj) => `<label class="f">${label}<input data-i="${idx}" data-k="${key}" inputmode="numeric" value="${val || ""}" placeholder="0">${hint ? `<span style="font-size:12px" class="${out(val, bandObj) ? "" : "muted"}" ${out(val, bandObj) ? 'style="color:var(--warn)"' : ""}>${hint}${out(val, bandObj) ? " · outside band" : ""}</span>` : ""}</label>`;
+  return `<article class="card lineitem" style="${it.optional ? "border-style:dashed" : ""}">
+    <div class="row between"><div class="row" style="gap:6px">${it.kind === "offer" ? `<span class="pill" style="background:var(--ink);color:var(--bg)">Packaged offer</span>` : it.kind === "custom" ? `<span class="pill info">Custom</span>` : `<span class="pill">${esc(linkName[svc[it.ref]?.linkId] || "")}</span>`}${it.example ? `<span class="pill">Example price</span>` : ""}${it.optional ? `<span class="pill warn">Optional</span>` : ""}</div>
+      <div class="row" style="gap:2px"><button class="btn ghost sm" data-act="up" data-i="${idx}" aria-label="Move up">↑</button><button class="btn ghost sm" data-act="rm" data-i="${idx}" style="color:var(--bad)">Remove</button></div></div>
+    <input data-i="${idx}" data-k="name" value="${esc(it.name)}" aria-label="Line name" style="font-weight:600;font-size:17px;border-color:transparent;padding-left:0;background:transparent">
+    ${it.comps?.length ? `<div class="row" style="gap:6px">${it.comps.map((c, j) => `<button class="comp" data-act="comp" data-i="${idx}" data-j="${j}" aria-pressed="${c.on}">${esc(c.l)}</button>`).join("")}</div>${it.comps.some((c) => !c.on) ? `<p style="font-size:12px;color:var(--warn)">Scope reduced — review the price within the band.</p>` : ""}` : ""}
+    <div class="fields">
+      ${it.kind !== "offer" ? `<label class="f">Pricing<select data-i="${idx}" data-k="model" data-re="1">${[["one_time", "One-time / project"], ["per_unit", "Per unit"], ["monthly", "Monthly"], ["setup_monthly", "Setup + monthly"]].map(([v, l]) => `<option value="${v}" ${it.model === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>` : ""}
+      <label class="f">Quantity<input data-i="${idx}" data-k="qty" inputmode="numeric" value="${it.qty}"></label>
+      ${it.model === "per_unit" ? fld(`Price per ${esc(it.unit || "unit")} (₹)`, "price", it.price) + `<label class="f">Unit<input data-i="${idx}" data-k="unit" value="${esc(it.unit)}" placeholder="video"></label>` : ""}
+      ${it.model === "one_time" ? fld("One-time fee (₹)", "price", it.price) : ""}
+      ${it.model === "setup_monthly" ? (it.upInc ? `<label class="f">${it.upLabel || "Setup"} fee<input value="Included" disabled></label>` : fld(`${it.upLabel || "Setup"} fee (₹)`, "setup", it.setup, it.bandUp ? "Band " + band(it.bandUp) : "", it.bandUp)) : ""}
+      ${it.model === "setup_monthly" || it.model === "monthly" ? fld(`Monthly fee (₹)${it.term ? " × " + it.term + " mo" : ""}`, "monthly", it.monthly, it.bandMo ? "Band " + band(it.bandMo) : "", it.bandMo) : ""}
+    </div>
+    <div class="row between" style="border-top:1px solid var(--line);padding-top:10px">
+      <label class="row" style="gap:8px;font-size:14px"><input type="checkbox" data-i="${idx}" data-k="optional" ${it.optional ? "checked" : ""} style="width:18px;min-height:18px"> Optional add-on</label>
+      <b class="num" id="lt-${idx}">${lineText(a)}</b>
+    </div>
+    <label class="f">Note for the client<input data-i="${idx}" data-k="note" value="${esc(it.note)}"></label>
+  </article>`;
+}
+function lineText(a) { return [a.one ? inr(a.one) : "", a.mon ? inr(a.mon) + "/mo" : ""].filter(Boolean).join(" + ") || "—"; }
+
+function totalsHtml(t, q) {
+  const kv = (l, v, cls) => `<div class="kv ${cls || ""}"><span>${l}</span><span class="num">${v}</span></div>`;
+  return `<p class="eyebrow">Investment</p>
+    ${kv("One-time subtotal", inr(t.one))}${t.dOne ? kv("Discount", "−" + inr(t.dOne)) : ""}${t.rate ? kv("GST", inr(t.tOne), "muted") : ""}${kv("One-time total", inr(t.oneTotal), "big")}
+    <div class="line"></div>
+    ${kv("Monthly subtotal", inr(t.mon) + "/mo")}${t.dMon ? kv("Discount", "−" + inr(t.dMon) + "/mo") : ""}${t.rate ? kv("GST", inr(t.tMon) + "/mo", "muted") : ""}${kv("Monthly total", inr(t.monTotal) + "/mo", "big")}
+    ${t.optOne + t.optMon ? kv("Optional (not included)", lineText({ one: t.optOne, mon: t.optMon }), "muted") : ""}
+    <div class="line"></div>
+    ${kv("Initial payment", inr(t.initial), "big")}
+    ${t.contract != null ? kv(`Contract value · ${q.contract} mo (excl. GST)`, inr(t.contract)) : `<p class="muted" style="font-size:12px">Set a contract duration to see contract value.</p>`}`;
+}
+
+function renderTotalsBar() {
+  const t = totals(draft);
+  const side = $("#side-tot");
+  if (side) side.innerHTML = totalsHtml(t, draft) + saveButtons(t);
+  $("#tot").innerHTML = `<div class="sticky-tot"><div class="wrap">
+    <div><span>One-time</span><b>${inr(t.oneTotal)}</b></div><div><span>Monthly</span><b>${inr(t.monTotal)}</b></div><div><span>Initial</span><b>${inr(t.initial)}</b></div>
+    <button class="btn lime" data-act="save" ${draft.items.length ? "" : "disabled"}>Save quotation</button></div></div>`;
+  draft.items.forEach((it, i) => { const el = $("#lt-" + i); if (el) el.textContent = lineText(lineAmount(it)); });
+}
+function saveButtons(t) {
+  return `<div class="stack" style="margin-top:14px;gap:8px">${t.unpriced.length ? `<p style="font-size:13px;color:var(--warn)">Price not set: ${esc(t.unpriced.join(", "))}</p>` : ""}<button class="btn lime" data-act="save" ${draft.items.length ? "" : "disabled"}>Save quotation</button></div>`;
+}
+
+function changed(rerender) { persistDraft(); if (rerender) { const y = scrollY; renderBuilder(); scrollTo(0, y); } else renderTotalsBar(); }
+
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.closest("#app") && location.hash === "#new") {
+    if (el.dataset.f) { setPath(draft, el.dataset.f, el.type === "checkbox" ? el.checked : el.dataset.num ? Number(el.value.replace(/[^\d.]/g, "")) || 0 : el.value); changed(!!el.dataset.re || el.type === "checkbox"); }
+    else if (el.dataset.i != null && el.dataset.k) {
+      const it = draft.items[+el.dataset.i]; const k = el.dataset.k;
+      if (k === "optional") it.optional = el.checked;
+      else if (["qty", "price", "setup", "monthly"].includes(k)) it[k] = k === "qty" ? Math.max(1, parseInt(el.value.replace(/\D/g, "")) || 1) : Math.max(0, Number(el.value.replace(/[^\d.]/g, "")) || 0);
+      else it[k] = el.value;
+      changed(!!el.dataset.re || k === "optional");
+    }
+  }
+});
+document.addEventListener("change", (e) => { const el = e.target; if (el.tagName === "SELECT" && el.dataset.re && location.hash === "#new") { /* handled by input */ } });
+function setPath(o, p, v) { const k = p.split("."); let x = o; while (k.length > 1) x = x[k.shift()]; x[k[0]] = v; }
+
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  if (a === "goal") { draft.goals = draft.goals.includes(id) ? draft.goals.filter((x) => x !== id) : [...draft.goals, id]; changed(true); }
+  else if (a === "pain") { draft.pains = draft.pains.includes(id) ? draft.pains.filter((x) => x !== id) : [...draft.pains, id]; changed(true); }
+  else if (a === "aud") { if (draft.audit[id] === b.dataset.v) delete draft.audit[id]; else draft.audit[id] = b.dataset.v; changed(true); }
+  else if (a === "addoffer") { draft.items.push(offerLine(offerById[id])); if (offerById[id].term && !draft.contract) draft.contract = offerById[id].term; changed(true); toast("Added " + offerById[id].name); }
+  else if (a === "addsvc") { const s = svc[id]; draft.items.push(serviceLine(s, s.opts[0])); changed(true); toast("Added " + s.name); }
+  else if (a === "rm") { draft.items.splice(+b.dataset.i, 1); changed(true); }
+  else if (a === "up") { const i = +b.dataset.i; if (i > 0) { [draft.items[i - 1], draft.items[i]] = [draft.items[i], draft.items[i - 1]]; changed(true); } }
+  else if (a === "comp") { const c = draft.items[+b.dataset.i].comps[+b.dataset.j]; c.on = !c.on; changed(true); }
+  else if (a === "reset") { if (b.dataset.confirm) { draft = blank(); editing = null; changed(true); toast("Cleared"); } else { b.dataset.confirm = "1"; b.textContent = "Tap again to clear"; setTimeout(() => { b.textContent = "Start over"; delete b.dataset.confirm; }, 3000); } }
+  else if (a === "save") await saveDraftQuote(b);
+  else if (a === "status") await setStatus(id, b.dataset.v, b);
+  else if (a === "revise") await revise(id, b);
+  else if (a === "edit") { const q = quotes.find((x) => x.id === id); draft = strip(q); editing = { id: q.id, number: q.number, version: q.version }; persistDraft(); location.hash = "#new"; }
+  else if (a === "copy") copySummary(id);
+});
+
+function strip(q) { const { id, number, version, status, createdAt, updatedAt, issueDate, validUntil, totals: _t, ...rest } = q; return JSON.parse(JSON.stringify(rest)); }
+
+function nextNumber() {
+  const y = new Date().getFullYear();
+  const n = quotes.map((q) => q.number).filter((x) => x?.startsWith("MPQ-" + y + "-")).map((x) => +x.split("-")[2]);
+  return `MPQ-${y}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(4, "0")}`;
+}
+async function saveDraftQuote(btn) {
+  if (!draft.client.name.trim()) return toast("Add the business name first", true);
+  if (!db || !canWrite) return toast(db ? "You don't have permission to save here." : "Open this page in Claude while signed in to save.", true);
+  btn.disabled = true;
+  const t = totals(draft); const now = new Date().toISOString();
+  const rec = editing ? { ...strip(draft), id: editing.id, number: editing.number, version: editing.version } : { ...strip(draft), id: "q" + Date.now().toString(36) + uid(), number: nextNumber(), version: 1 };
+  const prev = quotes.find((x) => x.id === rec.id);
+  Object.assign(rec, { status: "draft", createdAt: prev?.createdAt || now, updatedAt: now, totals: t });
+  try { await saveQuote(rec); draft = blank(); editing = null; persistDraft(); toast(`Saved ${rec.number} v${rec.version} as draft`); location.hash = "#quote-q-" + rec.id; }
+  catch (e) { btn.disabled = false; toast("Not saved: " + (e.message || e.code), true); }
+}
+
+// ---- quotes list & detail
+function statusPill(s) { const m = { draft: "", sent: "info", accepted: "ok", rejected: "bad", expired: "warn" }; return `<span class="pill ${m[s] || ""}">${s}</span>`; }
+function renderQuotes() {
+  const latest = [...latestBy(() => true).values()].sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  $("#app").innerHTML = `<div class="stack">${banner()}
+    <div class="row between"><div><p class="eyebrow">Quotations</p><h1>Quotations</h1><p class="sub">Latest version of each. Earlier versions stay on the quotation page.</p></div><a class="btn" href="#new">New quotation</a></div>
+    <input type="search" id="qsearch" placeholder="Search client or number" aria-label="Search quotations">
+    ${latest.length ? `<div class="card scroll" style="padding:4px 12px"><table><thead><tr><th>Client</th><th>Number</th><th>Status</th><th>One-time</th><th>Monthly</th></tr></thead><tbody>
+      ${latest.map((q) => `<tr data-s="${esc((q.client.name + " " + q.number).toLowerCase())}"><td><a href="#quote-q-${q.id}" style="color:var(--ink);font-weight:600">${esc(q.client.name)}</a><br><span class="muted" style="font-size:12px">${esc(ind[q.client.industry]?.name || "")}</span></td><td class="num">${esc(q.number)} v${q.version}</td><td>${statusPill(effStatus(q))}</td><td class="num">${inr(q.totals.oneTotal)}</td><td class="num">${inr(q.totals.monTotal)}/mo</td></tr>`).join("")}
+    </tbody></table></div>` : `<div class="card empty">${ready ? "No saved quotations yet." : "Loading…"}</div>`}
+  </div>`;
+  $("#qsearch").oninput = (e) => { const v = e.target.value.toLowerCase(); document.querySelectorAll("tr[data-s]").forEach((r) => (r.hidden = !r.dataset.s.includes(v))); };
+}
+
+function renderQuote(id) {
+  const q = quotes.find((x) => x.id === id);
+  if (!q) { $("#app").innerHTML = `<div class="card empty">${ready ? "Quotation not found." : "Loading…"}</div>`; return; }
+  const versions = quotes.filter((x) => x.number === q.number).sort((a, b) => b.version - a.version);
+  const newer = versions.find((v) => v.version > q.version);
+  const st = effStatus(q);
+  const w = db && canWrite;
+  const mode = sessionStorage.getItem("mp-mode") || "client";
+  $("#app").innerHTML = `<div class="stack">${banner()}
+    <div class="row between"><div><p class="eyebrow num">${esc(q.number)} · v${q.version} ${statusPill(st)}</p><h1>${esc(q.client.name)}</h1>${q.issueDate ? `<p class="sub">Sent ${q.issueDate} · valid until ${q.validUntil}</p>` : `<p class="sub">Draft — edit, then mark as sent.</p>`}</div>
+      <div class="row" role="radiogroup" aria-label="View"><button class="chip" data-mode="client" aria-pressed="${mode === "client"}">Client view</button><button class="chip" data-mode="internal" aria-pressed="${mode === "internal"}">Internal</button></div></div>
+    ${newer ? `<div class="card sub">A newer version exists: <a href="#quote-q-${newer.id}">v${newer.version} (${newer.status})</a>. This version stays unchanged.</div>` : ""}
+    <div class="row">
+      ${q.status === "draft" ? `<button class="btn" data-act="edit" data-id="${q.id}" ${w ? "" : "disabled"}>Edit draft</button><button class="btn sec" data-act="status" data-id="${q.id}" data-v="sent" ${w && !q.totals.unpriced?.length ? "" : "disabled"}>Mark as sent</button>` : ""}
+      ${st === "sent" ? `<button class="btn lime" data-act="status" data-id="${q.id}" data-v="accepted" ${w ? "" : "disabled"}>Mark accepted</button><button class="btn sec" data-act="status" data-id="${q.id}" data-v="rejected" ${w ? "" : "disabled"}>Mark rejected</button>` : ""}
+      ${q.status !== "draft" && !newer ? `<button class="btn sec" data-act="revise" data-id="${q.id}" ${w ? "" : "disabled"}>Revise (new version)</button>` : ""}
+      <button class="btn sec" data-act="copy" data-id="${q.id}">Copy summary</button>
+    </div>
+    ${q.status === "draft" && q.totals.unpriced?.length ? `<div class="card" style="color:var(--warn)">Set a price before sending: ${esc(q.totals.unpriced.join(", "))}</div>` : ""}
+    ${mode === "internal" ? internalView(q) : clientView(q)}
+    ${versions.length > 1 ? `<div class="card"><p class="eyebrow">Versions</p>${versions.map((v) => `<p>${v.id === q.id ? `<b>v${v.version} (this)</b>` : `<a href="#quote-q-${v.id}">v${v.version}</a>`} · ${effStatus(v)}</p>`).join("")}</div>` : ""}
+  </div>`;
+  document.querySelectorAll("[data-mode]").forEach((b) => (b.onclick = () => { try { sessionStorage.setItem("mp-mode", b.dataset.mode); } catch {} renderQuote(id); }));
+}
+
+function clientView(q) {
+  const t = q.totals;
+  const inc = q.items.filter((x) => !x.optional), opt = q.items.filter((x) => x.optional);
+  const item = (it) => { const a = lineAmount(it); const parts = [];
+    if (it.model === "setup_monthly") { parts.push([`${it.upLabel || "Setup"} fee`, it.upInc ? "Included" : inr(it.setup * it.qty)]); parts.push([`Monthly${it.term ? " × " + it.term + " months" : ""}`, inr(a.mon) + "/mo"]); }
+    else if (it.model === "monthly") parts.push(["Monthly", inr(a.mon) + "/mo"]);
+    else if (it.model === "per_unit") parts.push([`${inr(it.price)} per ${it.unit || "unit"} × ${it.qty}`, inr(a.one)]);
+    else parts.push(["One-time", inr(a.one)]);
+    return `<div class="card row between" style="align-items:flex-start;${it.optional ? "border-style:dashed" : ""}"><div style="min-width:0;flex:1 1 240px"><h3>${esc(it.name)}</h3>${it.comps?.filter((c) => c.on).length ? `<div class="row" style="gap:6px;margin-top:8px">${it.comps.filter((c) => c.on).map((c) => `<span class="comp">${esc(c.l)}</span>`).join("")}</div>` : ""}${it.note ? `<p class="sub" style="margin-top:6px">${esc(it.note)}</p>` : ""}</div><div style="text-align:right">${parts.map(([l, v]) => `<p class="muted" style="font-size:12px">${esc(l)}</p><p class="num" style="font-weight:600">${v}</p>`).join("")}</div></div>`; };
+  return `<article class="stack cv">
+    <div class="cvhead stack" style="gap:8px"><div class="brand" style="color:var(--panel-ink)"><i></i>MEASURE PIXEL</div><p class="eyebrow" style="margin-top:18px">Growth proposal for</p><h1>${esc(q.client.name)}</h1><p style="opacity:.7;font-size:14px">${q.issueDate ? `Issued ${q.issueDate} · valid until ${q.validUntil}` : "Draft proposal"}${q.client.contact ? ` · Prepared for ${esc(q.client.contact)}` : ""}</p></div>
+    ${q.needs ? `<div class="card"><p class="eyebrow">What we heard</p><p style="white-space:pre-line;margin-top:6px">${esc(q.needs)}</p></div>` : ""}
+    <p class="eyebrow">Scope & investment</p>${inc.map(item).join("")}
+    ${opt.length ? `<p class="eyebrow">Optional add-ons — not in totals</p>${opt.map(item).join("")}` : ""}
+    <div class="card stack" style="gap:4px">
+      <div class="grid g4"><div><p class="eyebrow">One-time</p><p class="num" style="font-size:22px;font-weight:600">${t.oneTotal ? inr(t.oneTotal) : "—"}</p></div><div><p class="eyebrow">Monthly</p><p class="num" style="font-size:22px;font-weight:600">${t.monTotal ? inr(t.monTotal) + "/mo" : "—"}</p></div></div>
+      ${t.dOne + t.dMon ? `<div class="kv"><span>Discount ${q.discount}%${q.discountReason ? " — " + esc(q.discountReason) : ""}</span><span class="num">${lineText({ one: t.dOne, mon: t.dMon })}</span></div>` : ""}
+      ${t.rate ? `<div class="kv"><span>GST ${Math.round(t.rate * 100)}% (included above)</span><span class="num">${lineText({ one: t.tOne, mon: t.tMon })}</span></div>` : ""}
+      ${t.contract != null ? `<div class="kv"><span>Contract value over ${q.contract} months (excl. GST)</span><span class="num">${inr(t.contract)}</span></div>` : ""}
+      <div class="kv big" style="background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px 14px;margin-top:8px"><span>Initial payment to start</span><span class="num">${inr(t.initial)}</span></div>
+    </div>
+    ${q.terms ? `<div class="card"><p class="eyebrow">Terms</p><p style="white-space:pre-line;margin-top:6px" class="sub">${esc(q.terms)}</p></div>` : ""}
+  </article>`;
+}
+
+function internalView(q) {
+  const labels = Object.fromEntries(STATUS);
+  const findings = B.items.filter((i) => q.audit?.[i.id]);
+  return `<div class="grid g2">
+    <div class="card">${totalsHtml(q.totals, q)}</div>
+    <div class="card stack" style="gap:8px"><p class="eyebrow">Audit findings</p>${findings.length ? findings.map((i) => `<div class="kv"><span>${esc(i.l)}</span><span class="pill ${q.audit[i.id] === "mi" ? "bad" : q.audit[i.id] === "ni" ? "warn" : q.audit[i.id] === "ww" ? "ok" : ""}">${labels[q.audit[i.id]]}</span></div>`).join("") : `<p class="muted">No audit recorded.</p>`}
+      <p class="eyebrow" style="margin-top:8px">Contact</p><p class="sub">${esc([q.client.contact, q.client.phone, q.client.email, q.client.website].filter(Boolean).join(" · ") || "—")}</p>
+      ${q.internal ? `<p class="eyebrow" style="margin-top:8px">Internal notes</p><p style="white-space:pre-line">${esc(q.internal)}</p>` : ""}</div>
+  </div>`;
+}
+
+async function setStatus(id, to, btn) {
+  const q = quotes.find((x) => x.id === id); btn.disabled = true;
+  const now = new Date().toISOString();
+  const patch = { status: to, updatedAt: now };
+  if (q.status === "draft") { patch.issueDate = today(); patch.validUntil = addDays(today(), VALID_DAYS); }
+  try { await db.collection("quotes").doc(id).update(patch); toast(`Marked ${to}`); }
+  catch (e) { btn.disabled = false; toast("Not saved: " + (e.message || e.code), true); }
+}
+async function revise(id, btn) {
+  const q = quotes.find((x) => x.id === id); btn.disabled = true;
+  const now = new Date().toISOString();
+  const v = Math.max(...quotes.filter((x) => x.number === q.number).map((x) => x.version)) + 1;
+  const rec = { ...strip(q), id: "q" + Date.now().toString(36) + uid(), number: q.number, version: v, status: "draft", createdAt: now, updatedAt: now, totals: q.totals };
+  try { await saveQuote(rec); toast(`Created v${v} draft — v${q.version} is unchanged`); location.hash = "#quote-q-" + rec.id; }
+  catch (e) { btn.disabled = false; toast("Not saved: " + (e.message || e.code), true); }
+}
+function copySummary(id) {
+  const q = quotes.find((x) => x.id === id); const t = q.totals;
+  const lines = [`Measure Pixel — Proposal ${q.number}${q.version > 1 ? " v" + q.version : ""}`, `For: ${q.client.name}`, q.validUntil ? `Valid until: ${q.validUntil}` : "", ""];
+  for (const it of q.items.filter((x) => !x.optional)) lines.push(`• ${it.name}: ${lineText(lineAmount(it))}`);
+  lines.push("", t.oneTotal ? `One-time: ${inr(t.oneTotal)}` : "", t.monTotal ? `Monthly: ${inr(t.monTotal)}/mo` : "", t.rate ? `(Includes GST ${Math.round(t.rate * 100)}%)` : "", `Initial payment to start: ${inr(t.initial)}`);
+  const text = lines.filter((l, i, a) => l || a[i - 1]).join("\n");
+  navigator.clipboard.writeText(text).then(() => toast("Summary copied — paste into WhatsApp or email"), () => toast("Copy blocked by the browser", true));
+}
+
+// ---- catalogue
+function renderCatalogue() {
+  $("#app").innerHTML = `<div class="stack"><div><p class="eyebrow">Opportunity Board</p><h1>Catalogue</h1><p class="sub">32 services in five links · 44 industries · 14 packaged offers. Price bands are planning figures, set per client after discovery.</p></div>
+    <div class="card"><p class="eyebrow">Work these first — the cash tier</p><div class="row" style="gap:6px;margin-top:8px">${B.cash.map((c) => `<span class="pill lime">${esc(c)}</span>`).join("")}</div></div>
+    <div class="grid g2">${B.offers.map((o) => `<div class="card stack" style="gap:8px"><div class="row between"><span class="eyebrow num">${String(o.n).padStart(2, "0")} · ${esc(o.aud)}</span><span class="num" style="font-size:13px">${o.upKind === "project" ? "Project" : "Setup"} ${o.upInc ? "incl." : band(o.up)} · ${band(o.mo)}/mo${o.term ? " ×" + o.term : ""}</span></div><h3>${esc(o.name)}</h3><p class="sub" style="font-style:italic">“${esc(o.q)}”</p><div class="row" style="gap:6px">${o.comp.map((c) => `<span class="comp">${esc(c)}</span>`).join("")}</div></div>`).join("")}</div>
+    <div class="grid g2">${B.links.map((l) => `<div class="card"><h3>${esc(l.name)}</h3>${B.services.filter((s) => s.linkId === l.id).map((s) => `<div class="kv"><span>${esc(s.name)}</span><span class="muted num" style="font-size:12px">${s.opts.length ? s.opts.map((o) => o.unitPrice ? inr(o.unitPrice) + "/" + o.unitLabel : inr(o.monthlyFee) + "/mo").join(", ") : "price per client"}</span></div>`).join("")}</div>`).join("")}</div>
+    <div class="grid g4">${B.clusters.map((c) => `<div class="card"><h3>${esc(c.name)}</h3><p class="sub" style="font-size:13px;margin-top:6px">${B.industries.filter((i) => i.clusterId === c.id).map((i) => esc(i.name)).join(" · ")}</p></div>`).join("")}</div>
+  </div>`;
+}
+
+route();
+connect();
+})();
+</script>
